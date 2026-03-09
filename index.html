@@ -393,6 +393,17 @@
         <div class="r-section"><div class="r-section-title">🚨 Issues Found</div><ul class="issue-list" id="issues-list"></ul></div>
         <div class="r-section"><div class="r-section-title">✅ What Looks Good</div><ul class="issue-list" id="good-list"></ul></div>
         <div class="r-section"><div class="r-section-title">💡 Recommendations</div><ul class="issue-list" id="recs-list"></ul></div>
+
+        <!-- FIX & DOWNLOAD -->
+        <div id="fix-panel" style="display:none;margin-top:1.5rem;background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:10px;padding:1.25rem">
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--brown-dark);margin-bottom:0.75rem">🔧 Auto-fixable Issues</div>
+          <ul id="fix-list" style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem"></ul>
+          <div style="background:var(--cream);border:1px solid var(--warm-tan);border-radius:6px;padding:0.65rem 0.85rem;font-size:0.78rem;color:var(--brown-mid);margin-bottom:1.1rem;line-height:1.55">
+            ⚠️ <strong style="color:var(--brown-dark)">Cannot auto-fix:</strong> missing cover image (the file doesn't exist inside the epub to inject). Add a cover via the <em>Cover Changer</em> tab after downloading.
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="fixAndDownload()" id="fix-download-btn">✨ Fix &amp; Download Patched Epub</button>
+          <div id="fix-status" class="status-msg"></div>
+        </div>
       </div>
     </div>
     <div>
@@ -780,6 +791,8 @@ function showRepairCard(name, size) {
   document.getElementById('repair-thinking').classList.remove('visible');
   document.getElementById('free-prompt-section').style.display='none';
   document.getElementById('metadata-panel').style.display='none';
+  document.getElementById('fix-panel').style.display='none';
+  lastAnalysis=null;
 }
 const rdz=document.getElementById('repair-dz');
 rdz.addEventListener('dragover',e=>{e.preventDefault();rdz.classList.add('dragover');});
@@ -900,7 +913,17 @@ async function callClaude(key, info) {
   return JSON.parse(d.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
 }
 
+// What we can actually patch in the epub bytes
+const AUTO_FIXES = [
+  { id:'ncx-title',   label:'Fix NCX docTitle',         detail:'Replaces "UnKnown" (or wrong title) in the NCX with the correct book title.' },
+  { id:'opf-desc',    label:'Inject description',        detail:'Writes the AI-suggested description into the dc:description OPF field.' },
+  { id:'opf-series',  label:'Add series metadata',       detail:'Injects Calibre-compatible series/series-index meta tags into the OPF.' },
+  { id:'author-flip', label:'Normalize author name',     detail:'Converts "Last, First" format to "First Last" in both OPF and NCX.' },
+];
+let lastAnalysis = null; // store full analysis result for fix step
+
 function renderResults(res) {
+  lastAnalysis = res;
   document.getElementById('repair-results').classList.add('visible');
   const sc=res.score||0, c=document.getElementById('score-circle');
   c.textContent=sc; c.className='score-circle '+(sc>=80?'good':sc>=50?'ok':'poor');
@@ -917,7 +940,138 @@ function renderResults(res) {
   repairMetaSug=res.suggestedMetadata||{};
   renderMetaEditor(repairMetaSug);
   document.getElementById('metadata-panel').style.display='block';
+
+  // Show fix panel with checkboxes for applicable fixes
+  const meta = res.suggestedMetadata||{};
+  const applicable = AUTO_FIXES.filter(f => {
+    if (f.id==='ncx-title') return true; // always worth doing
+    if (f.id==='opf-desc') return !!(meta.description);
+    if (f.id==='opf-series') return !!(meta.series);
+    if (f.id==='author-flip') return !!(meta.author && meta.author.includes(','));
+    return false;
+  });
+  if (applicable.length && repairFile) {
+    const ul = document.getElementById('fix-list');
+    ul.innerHTML = applicable.map(f=>`
+      <li style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.5rem 0.6rem;background:var(--cream);border-radius:6px;border:1px solid var(--warm-tan)">
+        <input type="checkbox" id="fix-cb-${f.id}" checked style="margin-top:0.25rem;accent-color:var(--rust);cursor:pointer" />
+        <label for="fix-cb-${f.id}" style="cursor:pointer;font-size:0.84rem;line-height:1.5">
+          <strong style="color:var(--brown-dark)">${esc(f.label)}</strong><br>
+          <span style="color:var(--brown-mid);font-size:0.78rem">${esc(f.detail)}</span>
+        </label>
+      </li>`).join('');
+    document.getElementById('fix-panel').style.display='block';
+  } else {
+    document.getElementById('fix-panel').style.display='none';
+  }
+
   toast('Analysis complete!','success');
+}
+
+async function fixAndDownload() {
+  if (!repairFile) { toast('No epub file loaded','error'); return; }
+  if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+
+  const checked = id => document.getElementById('fix-cb-'+id)?.checked;
+  const meta = lastAnalysis?.suggestedMetadata || {};
+  const btn = document.getElementById('fix-download-btn');
+  btn.disabled = true; btn.textContent = '⏳ Patching…';
+  setStatus('fix-status','','');
+
+  try {
+    const ab = await repairFile.arrayBuffer();
+    const zip = await JSZip.loadAsync(ab);
+
+    // Find OPF path
+    let opfPath = null;
+    const cont = await zip.file('META-INF/container.xml')?.async('text');
+    if (cont) { const m=cont.match(/full-path="([^"]+\.opf)"/i); if(m) opfPath=m[1]; }
+    if (!opfPath) opfPath = Object.keys(zip.files).find(f=>f.endsWith('.opf'));
+
+    let fixes = [];
+
+    // ── PATCH OPF ──
+    if (opfPath) {
+      let opf = await zip.file(opfPath).async('text');
+      const origOpf = opf;
+
+      // Fix description
+      if (checked('opf-desc') && meta.description) {
+        const desc = meta.description.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        if (/<dc:description[^>]*>\s*<\/dc:description>/.test(opf) || !opf.includes('<dc:description')) {
+          if (opf.includes('<dc:description')) {
+            opf = opf.replace(/<dc:description[^>]*>[\s\S]*?<\/dc:description>/i, `<dc:description>${desc}</dc:description>`);
+          } else {
+            opf = opf.replace('</metadata>', `  <dc:description>${desc}</dc:description>\n   </metadata>`);
+          }
+          fixes.push('Added description');
+        }
+      }
+
+      // Fix series metadata (Calibre-compatible)
+      if (checked('opf-series') && meta.series) {
+        const seriesEsc = meta.series.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const idx = meta.seriesIndex || '1';
+        // Remove old calibre series tags if present
+        opf = opf.replace(/<meta name="calibre:series"[^/]*\/>/gi,'');
+        opf = opf.replace(/<meta name="calibre:series_index"[^/]*\/>/gi,'');
+        opf = opf.replace('</metadata>',
+          `  <meta name="calibre:series" content="${seriesEsc}"/>\n   <meta name="calibre:series_index" content="${idx}"/>\n   </metadata>`);
+        fixes.push(`Added series: ${meta.series}`);
+      }
+
+      // Fix author flip "Last, First" → "First Last"
+      if (checked('author-flip') && meta.author && meta.author.includes(',')) {
+        const parts = meta.author.split(',').map(s=>s.trim());
+        const normalized = parts.length===2 ? `${parts[1]} ${parts[0]}` : meta.author;
+        opf = opf.replace(/<dc:creator([^>]*)>([^<]+)<\/dc:creator>/gi, (match, attrs, name) => {
+          const fixed = name.trim().includes(',') ? normalized : name;
+          // Also fix opf:file-as
+          const newAttrs = attrs.replace(/opf:file-as="[^"]*"/, `opf:file-as="${meta.author}"`);
+          return `<dc:creator${newAttrs}>${fixed}</dc:creator>`;
+        });
+        fixes.push(`Normalized author to "${normalized}"`);
+      }
+
+      if (opf !== origOpf) zip.file(opfPath, opf);
+    }
+
+    // ── PATCH NCX ──
+    if (checked('ncx-title')) {
+      const ncxPath = Object.keys(zip.files).find(f=>f.endsWith('.ncx'));
+      if (ncxPath) {
+        let ncx = await zip.file(ncxPath).async('text');
+        if (/UnKnown|Unknown/i.test(ncx) || (meta.title && !ncx.includes(meta.title.slice(0,20)))) {
+          const title = (meta.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          ncx = ncx.replace(/<docTitle>\s*<text>[^<]*<\/text>\s*<\/docTitle>/i,
+            `<docTitle><text>${title}</text></docTitle>`);
+          zip.file(ncxPath, ncx);
+          fixes.push('Fixed NCX title');
+        }
+      }
+    }
+
+    if (!fixes.length) {
+      setStatus('fix-status','No changes needed — all selected fixes were already correct.','info');
+      btn.disabled=false; btn.textContent='✨ Fix & Download Patched Epub'; return;
+    }
+
+    // Generate patched epub
+    const blob = await zip.generateAsync({type:'blob', mimeType:'application/epub+zip', compression:'DEFLATE', compressionOptions:{level:6}});
+    const origName = repairFile.name.replace(/\.epub$/i,'');
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`${origName}_fixed.epub`; a.click();
+    URL.revokeObjectURL(a.href);
+
+    setStatus('fix-status', `✓ Patched & downloaded! Fixes applied: ${fixes.join(', ')}.`, 'success');
+    toast(`Fixed ${fixes.length} issue${fixes.length>1?'s':''}!`, 'success');
+
+  } catch(err) {
+    setStatus('fix-status','Error: '+err.message,'error');
+    toast('Patch failed: '+err.message,'error');
+  }
+
+  btn.disabled=false; btn.textContent='✨ Fix & Download Patched Epub';
 }
 function renderMetaEditor(m) {
   const fields=[['title','Title'],['author','Author'],['language','Language'],['publisher','Publisher'],['publishDate','Publish Date'],['series','Series'],['seriesIndex','Series #'],['description','Description']];
