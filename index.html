@@ -544,13 +544,13 @@ function updateBanner() {
 
 // ══ NAV ══
 function switchPage(name, btn) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
-  if (name==='kindle') renderKindleList();
-  if (name==='covers') populateCoverSelect();
-  if (name==='repair') populateRepairSelect();
+  if (name === 'kindle') renderKindleList();
+  if (name === 'covers') populateCoverSelect();
+  if (name === 'repair') populateRepairSelect();
 }
 
 // ══ FILE UPLOAD ══
@@ -848,7 +848,7 @@ async function extractEpub(ab, filename) {
   if (opfPath) {
     const opf = await zip.file(opfPath)?.async('text');
     if (opf) {
-      info.opf = opf; // send FULL OPF — Claude needs the whole thing to rewrite the metadata block
+      info.opf = opf;
       const ex = tag => { const m = opf.match(new RegExp(`<dc:${tag}[^>]*>([^<]+)<\\/dc:${tag}>`, 'i')); return m ? m[1].trim() : ''; };
       info.metadata = { title:ex('title'), creator:ex('creator'), language:ex('language'), publisher:ex('publisher'), date:ex('date'), description:ex('description'), identifier:ex('identifier') };
       info.spine = [...opf.matchAll(/idref="([^"]+)"/g)].map(m => m[1]);
@@ -856,7 +856,7 @@ async function extractEpub(ab, filename) {
     }
   }
   const ncxF = info.files.find(f => f.endsWith('.ncx'));
-  if (ncxF) { const t = await zip.file(ncxF)?.async('text'); if (t) info.ncx = t; } // full NCX
+  if (ncxF) { const t = await zip.file(ncxF)?.async('text'); if (t) info.ncx = t; }
   const navF = info.files.find(f => (f.includes('nav') && f.endsWith('.xhtml')) || f.endsWith('nav.html'));
   if (navF) { const t = await zip.file(navF)?.async('text'); if (t) info.nav = t.slice(0, 3000); }
   info.hasCover = info.files.some(f => /cover\.(jpg|jpeg|png|webp)/i.test(f) || f.includes('cover'));
@@ -864,7 +864,13 @@ async function extractEpub(ab, filename) {
   return info;
 }
 
-function loadScript(src) { return new Promise((r,j)=>{ const s=document.createElement('script'); s.src=src; s.onload=r; s.onerror=j; document.head.appendChild(s); }); }
+function loadScript(src) {
+  return new Promise((r,j) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = r; s.onerror = j;
+    document.head.appendChild(s);
+  });
+}
 
 function buildPrompt(info) {
   return `You are an epub repair specialist. Study this epub's full internal content and return ONLY a JSON object — no markdown, no preamble, no explanation.
@@ -914,7 +920,6 @@ Return ONLY this exact JSON structure:
   "suggestedMetadata": {"title": "", "author": "", "language": "", "publisher": "", "publishDate": "", "description": "", "series": "", "seriesIndex": ""}
 }`;
 }
-}
 
 function showFreePrompt(info) {
   const p = buildPrompt(info);
@@ -942,8 +947,17 @@ function parseFreeResponse() {
 async function callClaude(key, info) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: buildPrompt(info) }] })
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: buildPrompt(info) }]
+    })
   });
   if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API error ' + r.status); }
   const d = await r.json();
@@ -953,7 +967,6 @@ async function callClaude(key, info) {
 let lastAnalysis = null;
 
 // ── APPLY FIXES & DOWNLOAD ──
-// Claude returns the corrected file content directly — we just patch it in and download.
 async function applyFixesAndDownload(res) {
   if (!repairFile || !res.fixes) return;
   if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
@@ -967,14 +980,12 @@ async function applyFixesAndDownload(res) {
     if (cont) { const m = cont.match(/full-path="([^"]+\.opf)"/i); if (m) opfPath = m[1]; }
     if (!opfPath) opfPath = Object.keys(zip.files).find(f => f.endsWith('.opf'));
 
-    // Patch OPF: Claude returns the entire corrected <metadata>...</metadata> block
     if (fixes.opfMetadataBlock && opfPath) {
       let opf = await zip.file(opfPath).async('text');
       const patched = opf.replace(/<metadata[\s\S]*?<\/metadata>/i, fixes.opfMetadataBlock.trim());
       if (patched !== opf) { zip.file(opfPath, patched); applied.push('OPF metadata updated'); }
     }
 
-    // Patch NCX docTitle
     if (fixes.ncxDocTitle) {
       const ncxPath = Object.keys(zip.files).find(f => f.endsWith('.ncx'));
       if (ncxPath) {
@@ -1021,7 +1032,6 @@ function renderResults(res) {
   renderMetaEditor(repairMetaSug);
   document.getElementById('metadata-panel').style.display = 'block';
 
-  // Show what was fixed (read-only summary, no checkboxes needed)
   const fixes = res.fixes || {};
   const summary = [...(fixes.appliedFixes || [])];
   if (fixes.opfMetadataBlock) summary.unshift('OPF metadata rewritten');
@@ -1037,6 +1047,7 @@ function renderResults(res) {
     fixPanel.style.display = 'none';
   }
 }
+
 function renderMetaEditor(m) {
   const fields=[['title','Title'],['author','Author'],['language','Language'],['publisher','Publisher'],['publishDate','Publish Date'],['series','Series'],['seriesIndex','Series #'],['description','Description']];
   document.getElementById('meta-grid').innerHTML=fields.map(([k,l])=>`<span class="meta-key">${l}</span><input class="meta-editable" id="mf-${k}" value="${esc(m[k]||'')}" />`).join('');
