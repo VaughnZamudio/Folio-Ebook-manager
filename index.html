@@ -175,8 +175,6 @@
     .claude-bar { background:linear-gradient(135deg,#6b4fa0,#9370db); border-radius:8px; padding:1.25rem; text-align:center; margin-bottom:1.25rem; }
     .claude-bar p { color:rgba(255,255,255,0.85); font-size:0.82rem; margin-bottom:0.85rem; line-height:1.5; }
     .claude-bar a { display:inline-flex; align-items:center; gap:0.4rem; background:#fff; color:#6b4fa0; text-decoration:none; padding:0.55rem 1.2rem; border-radius:6px; font-family:'Lora',serif; font-size:0.875rem; transition:opacity 0.2s; }
-    .paste-area { width:100%; min-height:100px; padding:0.7rem; border:1.5px solid var(--warm-tan); border-radius:6px; background:var(--parchment); font-family:'Lora',serif; font-size:0.84rem; color:var(--ink); outline:none; resize:vertical; }
-    .paste-area:focus { border-color:var(--rust); }
     .thinking-wrap { display:none; flex-direction:column; align-items:center; padding:2.5rem; text-align:center; gap:1rem; }
     .thinking-wrap.visible { display:flex; }
     .thinking-dots span { display:inline-block; width:8px; height:8px; background:var(--rust); border-radius:50%; margin:0 3px; animation:db 1.2s infinite ease-in-out; }
@@ -344,7 +342,7 @@
     <span style="font-size:0.72rem;color:var(--brown-mid);font-style:italic;width:100%;margin-top:-0.25rem">Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--rust)">console.anthropic.com</a> — new accounts get $5 free (~200 analyses). Key saved to localStorage.</span>
   </div>
   <div id="free-mode-banner" class="claude-bar" style="display:none">
-    <p>No API key needed. Folio extracts your epub's internals and builds a repair prompt — paste it into Claude.ai (free), then paste the JSON response back. Folio applies the fixes and downloads the patched epub.</p>
+    <p>No API key needed. Folio builds a repair prompt containing your entire epub — paste it into Claude.ai (free) and Claude hands you back a ready-to-run page that downloads your fixed epub instantly. One prompt, done.</p>
     <a href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
   </div>
   <div class="repair-layout">
@@ -372,15 +370,15 @@
       </div>
       <div id="free-prompt-section" style="display:none">
         <div class="r-section-title" style="margin-bottom:0.5rem">📋 Copy this prompt into Claude.ai</div>
+        <div style="background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:8px;padding:0.85rem 1rem;margin-bottom:0.85rem;font-size:0.82rem;color:var(--brown-mid);line-height:1.6">
+          Claude will respond with a self-contained HTML page. <strong style="color:var(--brown-dark)">Open that artifact</strong> — it will automatically patch and download your fixed epub. No need to return here.
+        </div>
         <div class="prompt-box" id="prompt-box"></div>
-        <div style="display:flex;gap:0.75rem;margin-bottom:1.25rem">
-          <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copy</button>
+        <div style="display:flex;gap:0.75rem;margin-bottom:0.5rem">
+          <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copy prompt</button>
           <a class="btn btn-claude btn-sm" id="free-claude-link" href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
         </div>
-        <div class="r-section-title" style="margin-bottom:0.5rem">📥 Paste Claude's response here, then download</div>
-        <textarea class="paste-area" id="paste-area" placeholder="Paste Claude's JSON response here…"></textarea>
-        <button class="btn btn-primary" style="margin-top:0.75rem;width:100%;justify-content:center" onclick="parseFreeResponse()">✨ Apply Fixes &amp; Download →</button>
-        <div id="free-parse-status" class="status-msg"></div>
+        <div id="free-size-warning" class="status-msg" style="display:none"></div>
       </div>
       <div class="repair-results" id="repair-results">
         <div class="score-bar">
@@ -414,13 +412,13 @@
         <div id="meta-apply-status" class="status-msg"></div>
       </div>
       <div class="panel" style="margin-top:1.5rem">
-        <div class="panel-title">🔧 What this checks</div>
+        <div class="panel-title">🔧 What this repairs</div>
         <ul class="steps-list">
-          <li><strong>Metadata</strong> — title, author, language, publisher, date, description.</li>
-          <li><strong>Navigation</strong> — NCX/TOC presence, chapter hierarchy, landmarks.</li>
-          <li><strong>File hygiene</strong> — missing spine items, broken links, malformed OPF.</li>
-          <li><strong>Cover image</strong> — embedded and meets Kindle size recommendations.</li>
-          <li><strong>Encoding</strong> — charset declarations, lang attributes.</li>
+          <li><strong>Metadata</strong> — title, author normalisation, language, publisher, description, series tags.</li>
+          <li><strong>Navigation</strong> — NCX dtb:uid sync, playOrder renumbering, duplicate id removal.</li>
+          <li><strong>File hygiene</strong> — removes broken manifest hrefs &amp; dangling spine itemrefs.</li>
+          <li><strong>Compendium TOC</strong> — rebuilds navMap for epubmerge / multi-book epubs.</li>
+          <li><strong>Free mode</strong> — Claude returns a ready-to-open HTML page that downloads your fixed epub directly. One prompt, done.</li>
         </ul>
       </div>
     </div>
@@ -862,6 +860,14 @@ async function extractEpub(ab, filename) {
   if (navF) { const t = await zip.file(navF)?.async('text'); if (t) info.nav = t.slice(0, 3000); }
   info.hasCover = info.files.some(f => /cover\.(jpg|jpeg|png|webp)/i.test(f) || f.includes('cover'));
   info.fileCount = info.files.length;
+  // Encode full epub for one-shot prompt embedding
+  const u8 = new Uint8Array(ab);
+  let bin = '';
+  for (let i = 0; i < u8.length; i += 8192) {
+    bin += String.fromCharCode(...u8.subarray(i, i + 8192));
+  }
+  info.epubBase64 = btoa(bin);
+  info.opfPath = opfPath || '';
   return info;
 }
 
@@ -874,76 +880,91 @@ function loadScript(src) {
 }
 
 function buildPrompt(info) {
-  return `You are an epub repair specialist. Study this epub's full internal content and return ONLY a JSON object — no markdown, no preamble, no explanation.
-
-Your job is to BOTH diagnose issues AND return corrected file content so the epub can be patched immediately.
-
-═══ EPUB INFO ═══
-FILE: ${info.filename}
-FILES IN ZIP: ${info.fileCount} | COVER DETECTED: ${info.hasCover} | SPINE ITEMS: ${info.spine.length}
-
-═══ CURRENT METADATA (from OPF) ═══
-${JSON.stringify(info.metadata, null, 2)}
-
-═══ FULL OPF FILE ═══
-${(info.opf||'NOT FOUND').slice(0,6000)}
-
-═══ FULL NCX FILE ═══
-${(info.ncx||'NOT FOUND').slice(0,3000)}
-
-${info.nav ? `═══ NAV DOCUMENT ═══\n${info.nav.slice(0,2000)}` : ''}
-
-═══ MANIFEST SAMPLE ═══
-${info.manifest.slice(0,30).join(', ')}
-
-═══ YOUR TASK ═══
-1. Diagnose all issues (metadata gaps, wrong NCX title, missing description, bad author format, missing series info, HTML-encoded description, etc.)
-2. Return corrected versions — write the actual fixed XML content, not descriptions of what to fix.
-3. For description: write clean plain text only (no HTML tags or &lt; entities).
-4. For author: normalize "Last, First" to "First Last" in both OPF and display name.
-5. For series: add Calibre-compatible calibre:series and calibre:series_index meta tags to the OPF metadata block.
-6. In opfMetadataBlock: return the COMPLETE corrected <metadata>...</metadata> XML block (including all existing tags, with your corrections applied). Return null if no OPF changes are needed.
-7. In ncxDocTitle: return just the corrected plain-text title string. Return null if already correct.
-
-Return ONLY this exact JSON structure:
-{
-  "score": <0-100>,
-  "scoreLabel": "<Excellent|Good|Needs Work|Poor>",
-  "scoreSummary": "<one sentence>",
-  "issues": [{"severity": "<critical|warning|info>", "title": "", "detail": ""}],
-  "goodThings": [{"title": "", "detail": ""}],
-  "recommendations": [{"title": "", "detail": ""}],
-  "fixes": {
-    "opfMetadataBlock": "<complete corrected metadata XML block, or null>",
-    "ncxDocTitle": "<corrected title string, or null>",
-    "appliedFixes": ["human-readable description of each change made"]
-  },
-  "suggestedMetadata": {"title": "", "author": "", "language": "", "publisher": "", "publishDate": "", "description": "", "series": "", "seriesIndex": ""}
-}`;
+  const sizeMB = info.epubBase64 ? (info.epubBase64.length * 0.75 / 1048576).toFixed(1) : '?';
+  const fixedName = info.filename.replace(/\.epub$/i, '') + '_fixed.epub';
+  const filesSnippet = info.files.slice(0, 60).join('\n');
+  return [
+    'You are an epub repair specialist. Analyse the epub below and respond with a SINGLE self-contained HTML page — no explanation, no preamble, just the HTML.',
+    '',
+    'The HTML page must:',
+    '1. On load, decode the base64 epub, patch it with JSZip (load from https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js), and immediately trigger a browser download of the fixed file.',
+    '2. Show a minimal status message while working ("Patching…") then confirm success.',
+    '3. Apply ALL fixes below operating directly on the in-memory JSZip object.',
+    '',
+    '═══ FIX A — OPF METADATA ═══',
+    `Replace the entire <metadata>…</metadata> block in the OPF (path: "${info.opfPath}") with a corrected block. Corrections:`,
+    '- Normalise "Last, First" author to "First Last"',
+    '- Write a clean plain-text description (no HTML entities or tags)',
+    '- Add missing language/publisher/date if inferrable',
+    '- Add calibre:series and calibre:series_index meta tags if a series is detectable',
+    '- Preserve all existing dc: elements; only correct or add, never delete',
+    '',
+    'CURRENT OPF:',
+    (info.opf || '(not found)').slice(0, 5000),
+    '',
+    '═══ FIX B — NCX ═══',
+    '- Set dtb:uid content to match the OPF unique-identifier value',
+    '- Fix <docTitle><text> to match the corrected title',
+    '- Renumber all playOrder attributes sequentially from 1',
+    '- Deduplicate any navPoint id attributes (append _2, _3… suffix)',
+    '',
+    'CURRENT NCX:',
+    (info.ncx || '(not found)').slice(0, 3000),
+    '',
+    '═══ FIX C — MANIFEST HYGIENE ═══',
+    'Remove any <item> whose href does not exist in the zip file list, and remove its matching <itemref> from the spine.',
+    '',
+    'Files actually in the zip:',
+    filesSnippet,
+    '',
+    '═══ EPUB TYPE ═══',
+    'If any manifest hrefs start with a numeric folder prefix (1/, 2/, 3/…), OR there are 2+ titlepage files, OR the OPF contains "epubmerge" — treat as COMPENDIUM and apply Fix D.',
+    '',
+    '═══ FIX D — COMPENDIUM navMap REBUILD (compendium only) ═══',
+    'Group xhtml content docs by numeric folder prefix. One top-level navPoint per book, chapters nested as children. Rewrite the entire <navMap> block with sequential playOrder.',
+    '',
+    '═══ EPUB DATA ═══',
+    `FILE: ${info.filename} (${sizeMB} MB encoded) | FILES IN ZIP: ${info.fileCount} | COVER: ${info.hasCover} | SPINE ITEMS: ${info.spine.length}`,
+    '',
+    'BASE64 EPUB:',
+    info.epubBase64 || '(not available)',
+    '',
+    '═══ OUTPUT FORMAT ═══',
+    `Produce a single self-contained HTML file. The script must:`,
+    '  1. Load JSZip from the CDN URL above',
+    `  2. Base64-decode the epub, load into JSZip`,
+    '  3. Apply all applicable fixes to the zip object in memory',
+    `  4. Call zip.generateAsync({type:"base64", mimeType:"application/epub+zip"})`,
+    `  5. Trigger download: data:application/epub+zip;base64,<output> with filename "${fixedName}"`,
+    '  6. Update a status element to "✓ Done — check your downloads!"',
+    '',
+    'Style the page simply: dark background, monospace font, centred status text.',
+    'Return ONLY the complete HTML. Nothing before the <!DOCTYPE or after the closing </html>.'
+  ].join('\n');
 }
-
 function showFreePrompt(info) {
   const p = buildPrompt(info);
   document.getElementById('prompt-box').textContent = p;
   document.getElementById('free-claude-link').href = 'https://claude.ai';
   document.getElementById('free-prompt-section').style.display = 'block';
-  toast('Prompt ready — copy it into Claude.ai', 'success');
+  const sizeMB = info.epubBase64 ? (info.epubBase64.length * 0.75 / 1048576).toFixed(1) : 0;
+  const warn = document.getElementById('free-size-warning');
+  if (parseFloat(sizeMB) > 4) {
+    warn.textContent = `⚠ This epub is ${sizeMB} MB — the prompt is large. Claude.ai handles it fine but may take a moment.`;
+    warn.className = 'status-msg info';
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+  toast('Prompt ready — paste into Claude.ai and it will give you the download', 'success');
 }
 function copyPrompt() {
   navigator.clipboard.writeText(document.getElementById('prompt-box').textContent)
     .then(() => toast('Prompt copied!', 'success'))
     .catch(() => toast('Select and copy the text manually', 'error'));
 }
-function parseFreeResponse() {
-  const raw = document.getElementById('paste-area').value.trim();
-  if (!raw) { setStatus('free-parse-status', "Paste Claude's response first.", 'error'); return; }
-  try {
-    const result = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    document.getElementById('free-prompt-section').style.display = 'none';
-    renderResults(result);
-    applyFixesAndDownload(result);
-  } catch { setStatus('free-parse-status', 'Could not parse — paste the full JSON response.', 'error'); }
-}
+// parseFreeResponse removed — free mode is now one-shot.
+// Claude returns a self-contained HTML artifact that patches and downloads the epub directly.
 
 async function callClaude(key, info) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
