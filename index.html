@@ -816,6 +816,7 @@ async function runRepair() {
   try {
     const ab = await repairFile.arrayBuffer();
     const info = await extractEpub(ab, repairFile.name);
+    lastInfo = info;
     clearInterval(iv);
     if (repairMode === 'free') {
       document.getElementById('repair-thinking').classList.remove('visible');
@@ -965,10 +966,12 @@ async function callClaude(key, info) {
 }
 
 let lastAnalysis = null;
+let lastInfo = null;
 
 // ── APPLY FIXES & DOWNLOAD ──
 async function applyFixesAndDownload(res) {
   if (!repairFile || !res.fixes) return;
+  const info_fallback = lastInfo || {};
   if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
   const fixes = res.fixes;
   const applied = [];
@@ -996,6 +999,10 @@ async function applyFixesAndDownload(res) {
         if (patched !== ncx) { zip.file(ncxPath, patched); applied.push('NCX title corrected'); }
       }
     }
+
+    // Deep structural repair — runs after metadata patches, before zip generation
+    const deepFixes = await deepRepairEpub(zip, res, lastInfo || info_fallback);
+    applied.push(...deepFixes);
 
     const allFixes = [...applied, ...(fixes.appliedFixes || [])];
     if (!allFixes.length) { toast('No patches needed — epub looks clean!', 'success'); return; }
@@ -1092,6 +1099,223 @@ function toast(msg, type='success') {
   const c=document.getElementById('toast-container');
   const t=document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg; c.appendChild(t);
   setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); },3000);
+}
+
+// ══════════════════════════════════════════
+//  DEEP STRUCTURAL EPUB REPAIR
+//  Runs after metadata patches, before zip blob generation.
+//  Returns array of human-readable change descriptions.
+// ══════════════════════════════════════════
+async function deepRepairEpub(zip, res, info) {
+  const changes = [];
+  const zipFiles = Object.keys(zip.files).filter(f => !zip.files[f].dir);
+  const zipSet   = new Set(zipFiles.map(f => f.toLowerCase()));
+
+  // ── locate OPF ─────────────────────────────────────────────────────────────
+  let opfPath = null;
+  const contFile = zip.file('META-INF/container.xml');
+  if (contFile) {
+    const cont = await contFile.async('text');
+    const m = cont.match(/full-path="([^"]+\.opf)"/i);
+    if (m) opfPath = m[1];
+  }
+  if (!opfPath) opfPath = zipFiles.find(f => f.endsWith('.opf'));
+  if (!opfPath) return changes; // nothing we can do without OPF
+
+  const opfDir = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
+  let opfText = await zip.file(opfPath).async('text');
+
+  // ── locate NCX ─────────────────────────────────────────────────────────────
+  const ncxPath = zipFiles.find(f => f.endsWith('.ncx'));
+  let ncxText = ncxPath ? await zip.file(ncxPath).async('text') : null;
+
+  // ════════════════════════════════════════
+  //  1. DETECT EPUB TYPE
+  // ════════════════════════════════════════
+  const manifestHrefs = [...opfText.matchAll(/href="([^"]+)"/gi)].map(m => m[1]);
+  const hasNumberedFolders = manifestHrefs.some(h => /^\d+\//.test(h));
+  const titlepageCount = zipFiles.filter(f => /titlepage/i.test(f)).length;
+  const hasEpubMerge   = /epubmerge/i.test(opfText);
+  const isCompendium   = hasNumberedFolders || titlepageCount >= 2 || hasEpubMerge;
+  changes.push(`Epub type detected: ${isCompendium ? 'compendium' : 'standalone'}`);
+
+  // ════════════════════════════════════════
+  //  2. FIX BROKEN MANIFEST HREFS
+  // ════════════════════════════════════════
+  const brokenIds = new Set();
+  let newOpf = opfText;
+
+  const allItems = [...opfText.matchAll(/<item\s([^>]*)>/gi)];
+  for (const match of allItems) {
+    const attrs  = match[1];
+    const hrefM  = attrs.match(/href="([^"]+)"/i);
+    const idM    = attrs.match(/\bid="([^"]+)"/i);
+    if (!hrefM) continue;
+    const href   = hrefM[1];
+    // Resolve href relative to OPF directory
+    const resolved   = (opfDir + href).replace(/\.\//g, '').toLowerCase();
+    const inZip      = zipSet.has(resolved) || zipSet.has(href.toLowerCase());
+    if (!inZip) {
+      if (idM) brokenIds.add(idM[1]);
+      newOpf = newOpf.replace(match[0], `<!-- removed missing item: ${href} -->`);
+      changes.push(`Removed broken manifest item: ${href}`);
+    }
+  }
+
+  // Remove spine <itemref> entries for broken ids
+  for (const id of brokenIds) {
+    const irefRe = new RegExp(`<itemref[^>]*idref="${id}"[^>]*\\/?>`, 'gi');
+    const before = newOpf;
+    newOpf = newOpf.replace(irefRe, `<!-- removed spine ref: ${id} -->`);
+    if (newOpf !== before) changes.push(`Removed broken spine itemref: ${id}`);
+  }
+
+  if (newOpf !== opfText) {
+    zip.file(opfPath, newOpf);
+    opfText = newOpf;
+  }
+
+  // ════════════════════════════════════════
+  //  3. FIX NCX dtb:uid
+  // ════════════════════════════════════════
+  if (ncxText) {
+    const uidIdM  = opfText.match(/unique-identifier="([^"]+)"/i);
+    const uidId   = uidIdM ? uidIdM[1] : null;
+    let uidValue  = '';
+    if (uidId) {
+      const uidValM = opfText.match(new RegExp(`id="${uidId}"[^>]*>([^<]+)<`, 'i'));
+      if (uidValM) uidValue = uidValM[1].trim();
+    }
+    if (uidValue) {
+      const oldUid = ncxText.match(/<meta\s+name="dtb:uid"\s+content="([^"]*)"/i);
+      if (!oldUid || oldUid[1] !== uidValue) {
+        ncxText = ncxText.replace(
+          /<meta\s+name="dtb:uid"\s+content="[^"]*"/i,
+          `<meta name="dtb:uid" content="${uidValue}"`
+        );
+        changes.push(`NCX dtb:uid synced to OPF unique-identifier`);
+      }
+    }
+  }
+
+  // ════════════════════════════════════════
+  //  4. RENUMBER playOrder SEQUENTIALLY
+  // ════════════════════════════════════════
+  if (ncxText) {
+    let po = 1;
+    const before = ncxText;
+    ncxText = ncxText.replace(/playOrder="(\d+)"/gi, () => `playOrder="${po++}"`);
+    if (ncxText !== before) changes.push(`NCX playOrder renumbered sequentially (${po - 1} navPoints)`);
+  }
+
+  // ════════════════════════════════════════
+  //  5. DEDUPLICATE NCX navPoint ids
+  // ════════════════════════════════════════
+  if (ncxText) {
+    const seenIds = new Set();
+    const before  = ncxText;
+    ncxText = ncxText.replace(/(<navPoint\s[^>]*\bid=")([^"]+)(")/gi, (match, pre, id, post) => {
+      if (!seenIds.has(id)) { seenIds.add(id); return match; }
+      const newId = id + '_' + Math.random().toString(36).slice(2, 6);
+      return pre + newId + post;
+    });
+    if (ncxText !== before) changes.push('Deduplicated NCX navPoint ids');
+  }
+
+  // ════════════════════════════════════════
+  //  6. COMPENDIUM: REBUILD navMap
+  // ════════════════════════════════════════
+  if (isCompendium && ncxText) {
+    // Build a map of folder → manifest hrefs (content docs only: xhtml/html)
+    const contentRe  = /<item\s[^>]*media-type="application\/xhtml\+xml"[^>]*href="([^"]+)"/gi;
+    const allContent = [...opfText.matchAll(contentRe)].map(m => m[1]);
+
+    // Group by top-level folder prefix (e.g. "1/", "2/")
+    const folderMap  = new Map();
+    const noFolder   = [];
+    for (const href of allContent) {
+      const fm = href.match(/^(\d+)\//);
+      if (fm) {
+        const folder = fm[1];
+        if (!folderMap.has(folder)) folderMap.set(folder, []);
+        folderMap.get(folder).push(href);
+      } else {
+        noFolder.push(href);
+      }
+    }
+
+    // If we couldn't group meaningfully, skip navMap rebuild
+    if (folderMap.size >= 2) {
+      // Extract existing navPoint labels from current NCX (src → label)
+      const existingLabels = new Map();
+      const npRe = /<navPoint[^>]*>[\s\S]*?<navLabel>\s*<text>([^<]*)<\/text>\s*<\/navLabel>\s*<content\s+src="([^"]+)"/gi;
+      for (const m of [...ncxText.matchAll(npRe)]) {
+        existingLabels.set(decodeURIComponent(m[2].split('#')[0]), m[1].trim());
+      }
+
+      let playOrder = 1;
+      const navPointsXml = [];
+
+      const sortedFolders = [...folderMap.keys()].sort((a, b) => Number(a) - Number(b));
+      for (const folder of sortedFolders) {
+        const hrefs     = folderMap.get(folder);
+        const rootHref  = hrefs.find(h => /titlepage/i.test(h)) || hrefs[0];
+        let bookLabel   = existingLabels.get(rootHref) || `Book ${folder}`;
+
+        const topId     = `book_${folder}`;
+        const topPo     = playOrder++;
+
+        const children  = [];
+        for (const href of hrefs) {
+          const label  = existingLabels.get(href) || href.split('/').pop().replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+          const safeId = `np_${folder}_${href.replace(/[^a-zA-Z0-9]/g, '_').slice(-24)}`;
+          children.push(
+            `      <navPoint id="${safeId}" playOrder="${playOrder++}">\n` +
+            `        <navLabel><text>${escXml(label)}</text></navLabel>\n` +
+            `        <content src="${href}"/>\n` +
+            `      </navPoint>`
+          );
+        }
+
+        navPointsXml.push(
+          `    <navPoint id="${topId}" playOrder="${topPo}">\n` +
+          `      <navLabel><text>${escXml(bookLabel)}</text></navLabel>\n` +
+          `      <content src="${rootHref}"/>\n` +
+          children.join('\n') + '\n' +
+          `    </navPoint>`
+        );
+      }
+
+      // Append any non-folder content as flat entries at the end
+      for (const href of noFolder) {
+        const label  = existingLabels.get(href) || href.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+        const safeId = `np_root_${href.replace(/[^a-zA-Z0-9]/g, '_').slice(-24)}`;
+        navPointsXml.push(
+          `    <navPoint id="${safeId}" playOrder="${playOrder++}">\n` +
+          `      <navLabel><text>${escXml(label)}</text></navLabel>\n` +
+          `      <content src="${href}"/>\n` +
+          `    </navPoint>`
+        );
+      }
+
+      const newNavMap = `<navMap>\n${navPointsXml.join('\n')}\n  </navMap>`;
+      const before    = ncxText;
+      ncxText         = ncxText.replace(/<navMap>[\s\S]*<\/navMap>/i, newNavMap);
+      if (ncxText !== before) changes.push(`Compendium navMap rebuilt: ${sortedFolders.length} books, ${playOrder - 1} total navPoints`);
+    }
+  }
+
+  // ── Write final NCX ────────────────────────────────────────────────────────
+  if (ncxPath && ncxText) {
+    zip.file(ncxPath, ncxText);
+  }
+
+  return changes;
+}
+
+// XML-safe escaping for deepRepairEpub (separate from esc() to avoid HTML-context collisions)
+function escXml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 boot();
