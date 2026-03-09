@@ -331,7 +331,7 @@
 <!-- ══ REPAIR ══ -->
 <div class="page" id="page-repair">
   <div class="page-header">
-    <div><h1 class="page-title">Repair &amp; Clean</h1><p class="page-subtitle">AI-powered epub diagnostics — fix metadata, nav &amp; structure issues</p></div>
+    <div><h1 class="page-title">Repair &amp; Clean</h1><p class="page-subtitle">AI reads your epub, fixes what it can, and hands you back a clean file — in one step</p></div>
   </div>
   <div class="mode-toggle">
     <button class="mode-btn active" id="mode-btn-api" onclick="setRepairMode('api')">⚡ API (paid)</button>
@@ -344,7 +344,7 @@
     <span style="font-size:0.72rem;color:var(--brown-mid);font-style:italic;width:100%;margin-top:-0.25rem">Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--rust)">console.anthropic.com</a> — new accounts get $5 free (~200 analyses). Key saved to localStorage.</span>
   </div>
   <div id="free-mode-banner" class="claude-bar" style="display:none">
-    <p>No API key needed. Folio builds a prompt from your epub — open Claude.ai free, paste it in, paste the response back.</p>
+    <p>No API key needed. Folio extracts your epub's internals and builds a repair prompt — paste it into Claude.ai (free), then paste the JSON response back. Folio applies the fixes and downloads the patched epub.</p>
     <a href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
   </div>
   <div class="repair-layout">
@@ -363,7 +363,7 @@
       <div id="repair-file-card" style="display:none" class="file-card">
         <span style="font-size:1.5rem;flex-shrink:0">📄</span>
         <div style="flex:1;min-width:0"><div class="file-card-name" id="repair-file-name">—</div><div class="file-card-meta" id="repair-file-meta">—</div></div>
-        <button class="btn btn-primary btn-sm" onclick="runRepair()">Analyse →</button>
+        <button class="btn btn-primary btn-sm" onclick="runRepair()">✨ Repair &amp; Download →</button>
       </div>
       <div class="thinking-wrap" id="repair-thinking">
         <div class="thinking-dots"><span></span><span></span><span></span></div>
@@ -377,9 +377,9 @@
           <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copy</button>
           <a class="btn btn-claude btn-sm" id="free-claude-link" href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
         </div>
-        <div class="r-section-title" style="margin-bottom:0.5rem">📥 Paste Claude's response here</div>
+        <div class="r-section-title" style="margin-bottom:0.5rem">📥 Paste Claude's response here, then download</div>
         <textarea class="paste-area" id="paste-area" placeholder="Paste Claude's JSON response here…"></textarea>
-        <button class="btn btn-primary" style="margin-top:0.75rem;width:100%;justify-content:center" onclick="parseFreeResponse()">Parse Response →</button>
+        <button class="btn btn-primary" style="margin-top:0.75rem;width:100%;justify-content:center" onclick="parseFreeResponse()">✨ Apply Fixes &amp; Download →</button>
         <div id="free-parse-status" class="status-msg"></div>
       </div>
       <div class="repair-results" id="repair-results">
@@ -394,14 +394,10 @@
         <div class="r-section"><div class="r-section-title">✅ What Looks Good</div><ul class="issue-list" id="good-list"></ul></div>
         <div class="r-section"><div class="r-section-title">💡 Recommendations</div><ul class="issue-list" id="recs-list"></ul></div>
 
-        <!-- FIX & DOWNLOAD -->
+        <!-- FIXES APPLIED SUMMARY -->
         <div id="fix-panel" style="display:none;margin-top:1.5rem;background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:10px;padding:1.25rem">
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--brown-dark);margin-bottom:0.75rem">🔧 Auto-fixable Issues</div>
-          <ul id="fix-list" style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem"></ul>
-          <div style="background:var(--cream);border:1px solid var(--warm-tan);border-radius:6px;padding:0.65rem 0.85rem;font-size:0.78rem;color:var(--brown-mid);margin-bottom:1.1rem;line-height:1.55">
-            ⚠️ <strong style="color:var(--brown-dark)">Cannot auto-fix:</strong> missing cover image (the file doesn't exist inside the epub to inject). Add a cover via the <em>Cover Changer</em> tab after downloading.
-          </div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="fixAndDownload()" id="fix-download-btn">✨ Fix &amp; Download Patched Epub</button>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--brown-dark);margin-bottom:0.75rem">✨ Fixes Applied & Downloaded</div>
+          <ul id="fix-list" style="list-style:none;display:flex;flex-direction:column;gap:0.45rem;margin-bottom:0.75rem"></ul>
           <div id="fix-status" class="status-msg"></div>
         </div>
       </div>
@@ -806,272 +802,240 @@ document.getElementById('repair-file-input').addEventListener('change',e=>{
 });
 
 async function runRepair() {
-  if (!repairFile) { toast('No epub loaded','error'); return; }
+  if (!repairFile) { toast('No epub loaded', 'error'); return; }
   document.getElementById('repair-thinking').classList.add('visible');
   document.getElementById('repair-results').classList.remove('visible');
-  document.getElementById('free-prompt-section').style.display='none';
-  document.getElementById('metadata-panel').style.display='none';
-  const phases=['Parsing epub structure…','Reading OPF manifest…','Checking nav & NCX…','Inspecting metadata…','Building analysis…'];
-  let pi=0; const ph=document.getElementById('thinking-phase');
-  const iv=setInterval(()=>{ if(ph&&pi<phases.length) ph.textContent=phases[pi++]; },800);
+  document.getElementById('free-prompt-section').style.display = 'none';
+  document.getElementById('metadata-panel').style.display = 'none';
+  document.getElementById('fix-panel').style.display = 'none';
+
+  const phases = ['Unpacking epub…','Reading OPF & manifest…','Parsing NCX navigation…','Extracting full content…','Sending to Claude…'];
+  let pi = 0; const ph = document.getElementById('thinking-phase');
+  const iv = setInterval(() => { if (ph && pi < phases.length) ph.textContent = phases[pi++]; }, 900);
+
   try {
-    const ab=await repairFile.arrayBuffer();
-    const info=await extractEpub(ab, repairFile.name);
+    const ab = await repairFile.arrayBuffer();
+    const info = await extractEpub(ab, repairFile.name);
     clearInterval(iv);
-    if (repairMode==='free') {
+    if (repairMode === 'free') {
       document.getElementById('repair-thinking').classList.remove('visible');
       showFreePrompt(info);
     } else {
-      const key=document.getElementById('repair-api-key').value.trim()||localStorage.getItem('folio_api_key')||'';
-      if (!key) { document.getElementById('repair-thinking').classList.remove('visible'); toast('Enter your Anthropic API key first','error'); return; }
-      if(ph) ph.textContent='Consulting Claude…';
-      const result=await callClaude(key, info);
+      const key = document.getElementById('repair-api-key').value.trim() || localStorage.getItem('folio_api_key') || '';
+      if (!key) { document.getElementById('repair-thinking').classList.remove('visible'); toast('Enter your Anthropic API key first', 'error'); return; }
+      if (ph) ph.textContent = 'Claude is reading & repairing…';
+      const result = await callClaude(key, info);
       document.getElementById('repair-thinking').classList.remove('visible');
       renderResults(result);
+      await applyFixesAndDownload(result);
     }
-  } catch(err) {
+  } catch (err) {
     clearInterval(iv);
     document.getElementById('repair-thinking').classList.remove('visible');
-    toast('Error: '+err.message,'error');
+    toast('Error: ' + err.message, 'error');
   }
 }
 
 async function extractEpub(ab, filename) {
   if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-  const zip=await JSZip.loadAsync(ab);
-  const info={filename, files:[], opf:null, ncx:null, nav:null, spine:[], manifest:[], metadata:{}};
-  info.files=Object.keys(zip.files).filter(f=>!zip.files[f].dir);
-  let opfPath=null;
-  const cont=await zip.file('META-INF/container.xml')?.async('text');
-  if (cont) { const m=cont.match(/full-path="([^"]+\.opf)"/i); if(m) opfPath=m[1]; }
-  if (!opfPath) opfPath=info.files.find(f=>f.endsWith('.opf'));
+  const zip = await JSZip.loadAsync(ab);
+  const info = { filename, files:[], opf:null, ncx:null, nav:null, spine:[], manifest:[], metadata:{} };
+  info.files = Object.keys(zip.files).filter(f => !zip.files[f].dir);
+  let opfPath = null;
+  const cont = await zip.file('META-INF/container.xml')?.async('text');
+  if (cont) { const m = cont.match(/full-path="([^"]+\.opf)"/i); if (m) opfPath = m[1]; }
+  if (!opfPath) opfPath = info.files.find(f => f.endsWith('.opf'));
   if (opfPath) {
-    const opf=await zip.file(opfPath)?.async('text');
+    const opf = await zip.file(opfPath)?.async('text');
     if (opf) {
-      info.opf=opf.slice(0,8000);
-      const ex=tag=>{ const m=opf.match(new RegExp(`<dc:${tag}[^>]*>([^<]+)<\/dc:${tag}>`,'i')); return m?m[1].trim():''; };
-      info.metadata={title:ex('title'),creator:ex('creator'),language:ex('language'),publisher:ex('publisher'),date:ex('date'),description:ex('description'),identifier:ex('identifier')};
-      info.spine=[...opf.matchAll(/idref="([^"]+)"/g)].map(m=>m[1]);
-      info.manifest=[...opf.matchAll(/href="([^"]+)"/g)].map(m=>m[1]).slice(0,40);
+      info.opf = opf; // send FULL OPF — Claude needs the whole thing to rewrite the metadata block
+      const ex = tag => { const m = opf.match(new RegExp(`<dc:${tag}[^>]*>([^<]+)<\\/dc:${tag}>`, 'i')); return m ? m[1].trim() : ''; };
+      info.metadata = { title:ex('title'), creator:ex('creator'), language:ex('language'), publisher:ex('publisher'), date:ex('date'), description:ex('description'), identifier:ex('identifier') };
+      info.spine = [...opf.matchAll(/idref="([^"]+)"/g)].map(m => m[1]);
+      info.manifest = [...opf.matchAll(/href="([^"]+)"/g)].map(m => m[1]).slice(0, 40);
     }
   }
-  const ncxF=info.files.find(f=>f.endsWith('.ncx'));
-  if (ncxF) { const t=await zip.file(ncxF)?.async('text'); if(t) info.ncx=t.slice(0,3000); }
-  const navF=info.files.find(f=>(f.includes('nav')&&f.endsWith('.xhtml'))||f.endsWith('nav.html'));
-  if (navF) { const t=await zip.file(navF)?.async('text'); if(t) info.nav=t.slice(0,2000); }
-  info.hasCover=info.files.some(f=>/cover\.(jpg|jpeg|png|webp)/i.test(f)||f.includes('cover'));
-  info.fileCount=info.files.length;
+  const ncxF = info.files.find(f => f.endsWith('.ncx'));
+  if (ncxF) { const t = await zip.file(ncxF)?.async('text'); if (t) info.ncx = t; } // full NCX
+  const navF = info.files.find(f => (f.includes('nav') && f.endsWith('.xhtml')) || f.endsWith('nav.html'));
+  if (navF) { const t = await zip.file(navF)?.async('text'); if (t) info.nav = t.slice(0, 3000); }
+  info.hasCover = info.files.some(f => /cover\.(jpg|jpeg|png|webp)/i.test(f) || f.includes('cover'));
+  info.fileCount = info.files.length;
   return info;
 }
 
 function loadScript(src) { return new Promise((r,j)=>{ const s=document.createElement('script'); s.src=src; s.onload=r; s.onerror=j; document.head.appendChild(s); }); }
 
 function buildPrompt(info) {
-  return `You are an epub quality analyst. Analyse this epub's structure and return ONLY a JSON object — no markdown, no preamble.
+  return `You are an epub repair specialist. Study this epub's full internal content and return ONLY a JSON object — no markdown, no preamble, no explanation.
 
-EPUB: ${info.filename} | FILES: ${info.fileCount} | COVER: ${info.hasCover} | SPINE: ${info.spine.length} items
-METADATA: ${JSON.stringify(info.metadata)}
-OPF (first 3500 chars): ${(info.opf||'NOT FOUND').slice(0,3500)}
-NCX: ${(info.ncx||'NOT FOUND').slice(0,1500)}
-NAV: ${(info.nav||'NOT FOUND').slice(0,1000)}
-MANIFEST: ${info.manifest.slice(0,20).join(', ')}
+Your job is to BOTH diagnose issues AND return corrected file content so the epub can be patched immediately.
 
-Return exactly:
-{"score":<0-100>,"scoreLabel":"<Excellent|Good|Needs Work|Poor>","scoreSummary":"<one sentence>","issues":[{"severity":"<critical|warning|info>","title":"","detail":""}],"goodThings":[{"title":"","detail":""}],"recommendations":[{"title":"","detail":""}],"suggestedMetadata":{"title":"","author":"","language":"","publisher":"","publishDate":"","description":"","series":"","seriesIndex":""}}`;
+═══ EPUB INFO ═══
+FILE: ${info.filename}
+FILES IN ZIP: ${info.fileCount} | COVER DETECTED: ${info.hasCover} | SPINE ITEMS: ${info.spine.length}
+
+═══ CURRENT METADATA (from OPF) ═══
+${JSON.stringify(info.metadata, null, 2)}
+
+═══ FULL OPF FILE ═══
+${(info.opf||'NOT FOUND').slice(0,6000)}
+
+═══ FULL NCX FILE ═══
+${(info.ncx||'NOT FOUND').slice(0,3000)}
+
+${info.nav ? `═══ NAV DOCUMENT ═══\n${info.nav.slice(0,2000)}` : ''}
+
+═══ MANIFEST SAMPLE ═══
+${info.manifest.slice(0,30).join(', ')}
+
+═══ YOUR TASK ═══
+1. Diagnose all issues (metadata gaps, wrong NCX title, missing description, bad author format, missing series info, HTML-encoded description, etc.)
+2. Return corrected versions — write the actual fixed XML content, not descriptions of what to fix.
+3. For description: write clean plain text only (no HTML tags or &lt; entities).
+4. For author: normalize "Last, First" to "First Last" in both OPF and display name.
+5. For series: add Calibre-compatible calibre:series and calibre:series_index meta tags to the OPF metadata block.
+6. In opfMetadataBlock: return the COMPLETE corrected <metadata>...</metadata> XML block (including all existing tags, with your corrections applied). Return null if no OPF changes are needed.
+7. In ncxDocTitle: return just the corrected plain-text title string. Return null if already correct.
+
+Return ONLY this exact JSON structure:
+{
+  "score": <0-100>,
+  "scoreLabel": "<Excellent|Good|Needs Work|Poor>",
+  "scoreSummary": "<one sentence>",
+  "issues": [{"severity": "<critical|warning|info>", "title": "", "detail": ""}],
+  "goodThings": [{"title": "", "detail": ""}],
+  "recommendations": [{"title": "", "detail": ""}],
+  "fixes": {
+    "opfMetadataBlock": "<complete corrected metadata XML block, or null>",
+    "ncxDocTitle": "<corrected title string, or null>",
+    "appliedFixes": ["human-readable description of each change made"]
+  },
+  "suggestedMetadata": {"title": "", "author": "", "language": "", "publisher": "", "publishDate": "", "description": "", "series": "", "seriesIndex": ""}
+}`;
+}
 }
 
 function showFreePrompt(info) {
-  const p=buildPrompt(info);
-  document.getElementById('prompt-box').textContent=p;
-  document.getElementById('free-claude-link').href=`https://claude.ai/new?q=${encodeURIComponent(p).slice(0,4000)}`;
-  document.getElementById('free-prompt-section').style.display='block';
-  toast('Prompt ready — copy it into Claude.ai','success');
+  const p = buildPrompt(info);
+  document.getElementById('prompt-box').textContent = p;
+  document.getElementById('free-claude-link').href = 'https://claude.ai';
+  document.getElementById('free-prompt-section').style.display = 'block';
+  toast('Prompt ready — copy it into Claude.ai', 'success');
 }
 function copyPrompt() {
   navigator.clipboard.writeText(document.getElementById('prompt-box').textContent)
-    .then(()=>toast('Prompt copied!','success'))
-    .catch(()=>toast('Select and copy the text manually','error'));
+    .then(() => toast('Prompt copied!', 'success'))
+    .catch(() => toast('Select and copy the text manually', 'error'));
 }
 function parseFreeResponse() {
-  const raw=document.getElementById('paste-area').value.trim();
-  if (!raw) { setStatus('free-parse-status',"Paste Claude's response first.",'error'); return; }
+  const raw = document.getElementById('paste-area').value.trim();
+  if (!raw) { setStatus('free-parse-status', "Paste Claude's response first.", 'error'); return; }
   try {
-    const result=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    document.getElementById('free-prompt-section').style.display='none';
+    const result = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    document.getElementById('free-prompt-section').style.display = 'none';
     renderResults(result);
-  } catch { setStatus('free-parse-status','Could not parse — paste the full JSON response.','error'); }
+    applyFixesAndDownload(result);
+  } catch { setStatus('free-parse-status', 'Could not parse — paste the full JSON response.', 'error'); }
 }
 
 async function callClaude(key, info) {
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,messages:[{role:'user',content:buildPrompt(info)}]})
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: buildPrompt(info) }] })
   });
-  if (!r.ok) { const e=await r.json(); throw new Error(e.error?.message||'API error '+r.status); }
-  const d=await r.json();
-  return JSON.parse(d.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API error ' + r.status); }
+  const d = await r.json();
+  return JSON.parse(d.content.map(c => c.text || '').join('').replace(/```json|```/g, '').trim());
 }
 
-// What we can actually patch in the epub bytes
-const AUTO_FIXES = [
-  { id:'ncx-title',   label:'Fix NCX docTitle',         detail:'Replaces "UnKnown" (or wrong title) in the NCX with the correct book title.' },
-  { id:'opf-desc',    label:'Inject description',        detail:'Writes the AI-suggested description into the dc:description OPF field.' },
-  { id:'opf-series',  label:'Add series metadata',       detail:'Injects Calibre-compatible series/series-index meta tags into the OPF.' },
-  { id:'author-flip', label:'Normalize author name',     detail:'Converts "Last, First" format to "First Last" in both OPF and NCX.' },
-];
-let lastAnalysis = null; // store full analysis result for fix step
+let lastAnalysis = null;
+
+// ── APPLY FIXES & DOWNLOAD ──
+// Claude returns the corrected file content directly — we just patch it in and download.
+async function applyFixesAndDownload(res) {
+  if (!repairFile || !res.fixes) return;
+  if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+  const fixes = res.fixes;
+  const applied = [];
+  try {
+    const ab = await repairFile.arrayBuffer();
+    const zip = await JSZip.loadAsync(ab);
+    let opfPath = null;
+    const cont = await zip.file('META-INF/container.xml')?.async('text');
+    if (cont) { const m = cont.match(/full-path="([^"]+\.opf)"/i); if (m) opfPath = m[1]; }
+    if (!opfPath) opfPath = Object.keys(zip.files).find(f => f.endsWith('.opf'));
+
+    // Patch OPF: Claude returns the entire corrected <metadata>...</metadata> block
+    if (fixes.opfMetadataBlock && opfPath) {
+      let opf = await zip.file(opfPath).async('text');
+      const patched = opf.replace(/<metadata[\s\S]*?<\/metadata>/i, fixes.opfMetadataBlock.trim());
+      if (patched !== opf) { zip.file(opfPath, patched); applied.push('OPF metadata updated'); }
+    }
+
+    // Patch NCX docTitle
+    if (fixes.ncxDocTitle) {
+      const ncxPath = Object.keys(zip.files).find(f => f.endsWith('.ncx'));
+      if (ncxPath) {
+        let ncx = await zip.file(ncxPath).async('text');
+        const safe = fixes.ncxDocTitle.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const patched = ncx.replace(/<docTitle>\s*<text>[^<]*<\/text>\s*<\/docTitle>/i,
+          `<docTitle><text>${safe}</text></docTitle>`);
+        if (patched !== ncx) { zip.file(ncxPath, patched); applied.push('NCX title corrected'); }
+      }
+    }
+
+    const allFixes = [...applied, ...(fixes.appliedFixes || [])];
+    if (!allFixes.length) { toast('No patches needed — epub looks clean!', 'success'); return; }
+
+    const blob = await zip.generateAsync({ type:'blob', mimeType:'application/epub+zip', compression:'DEFLATE', compressionOptions:{level:6} });
+    const base = repairFile.name.replace(/\.epub$/i, '');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `${base}_fixed.epub`; a.click(); URL.revokeObjectURL(a.href);
+
+    setStatus('fix-status', '✓ ' + allFixes.join(' · '), 'success');
+    toast(`✨ ${allFixes.length} fix${allFixes.length !== 1 ? 'es' : ''} applied — downloading!`, 'success');
+  } catch (err) {
+    setStatus('fix-status', 'Patch error: ' + err.message, 'error');
+    toast('Patch failed: ' + err.message, 'error');
+  }
+}
 
 function renderResults(res) {
   lastAnalysis = res;
   document.getElementById('repair-results').classList.add('visible');
-  const sc=res.score||0, c=document.getElementById('score-circle');
-  c.textContent=sc; c.className='score-circle '+(sc>=80?'good':sc>=50?'ok':'poor');
-  document.getElementById('score-title').textContent=res.scoreLabel||'Health Score';
-  document.getElementById('score-label').textContent=res.scoreSummary||'';
-  const rl=(id,items,type)=>{
-    document.getElementById(id).innerHTML=(items&&items.length)
-      ?items.map(i=>`<li class="issue-item ${i.severity||type}"><span class="issue-badge">${i.severity||type}</span><div><strong>${esc(i.title)}</strong> — ${esc(i.detail)}</div></li>`).join('')
-      :`<li class="issue-item info"><span class="issue-badge">—</span><div>Nothing to report</div></li>`;
+  const sc = res.score||0, c = document.getElementById('score-circle');
+  c.textContent = sc; c.className = 'score-circle ' + (sc>=80?'good':sc>=50?'ok':'poor');
+  document.getElementById('score-title').textContent = res.scoreLabel || 'Health Score';
+  document.getElementById('score-label').textContent = res.scoreSummary || '';
+  const rl = (id, items, type) => {
+    document.getElementById(id).innerHTML = (items && items.length)
+      ? items.map(i=>`<li class="issue-item ${i.severity||type}"><span class="issue-badge">${i.severity||type}</span><div><strong>${esc(i.title)}</strong> — ${esc(i.detail)}</div></li>`).join('')
+      : `<li class="issue-item info"><span class="issue-badge">—</span><div>Nothing to report</div></li>`;
   };
-  rl('issues-list',res.issues,'info');
-  rl('good-list',(res.goodThings||[]).map(g=>({...g,severity:'fixed'})),'fixed');
-  rl('recs-list',(res.recommendations||[]).map(r=>({...r,severity:'info'})),'info');
-  repairMetaSug=res.suggestedMetadata||{};
+  rl('issues-list', res.issues, 'info');
+  rl('good-list', (res.goodThings||[]).map(g=>({...g,severity:'fixed'})), 'fixed');
+  rl('recs-list', (res.recommendations||[]).map(r=>({...r,severity:'info'})), 'info');
+  repairMetaSug = res.suggestedMetadata || {};
   renderMetaEditor(repairMetaSug);
-  document.getElementById('metadata-panel').style.display='block';
+  document.getElementById('metadata-panel').style.display = 'block';
 
-  // Show fix panel with checkboxes for applicable fixes
-  const meta = res.suggestedMetadata||{};
-  const applicable = AUTO_FIXES.filter(f => {
-    if (f.id==='ncx-title') return true; // always worth doing
-    if (f.id==='opf-desc') return !!(meta.description);
-    if (f.id==='opf-series') return !!(meta.series);
-    if (f.id==='author-flip') return !!(meta.author && meta.author.includes(','));
-    return false;
-  });
-  if (applicable.length && repairFile) {
-    const ul = document.getElementById('fix-list');
-    ul.innerHTML = applicable.map(f=>`
-      <li style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.5rem 0.6rem;background:var(--cream);border-radius:6px;border:1px solid var(--warm-tan)">
-        <input type="checkbox" id="fix-cb-${f.id}" checked style="margin-top:0.25rem;accent-color:var(--rust);cursor:pointer" />
-        <label for="fix-cb-${f.id}" style="cursor:pointer;font-size:0.84rem;line-height:1.5">
-          <strong style="color:var(--brown-dark)">${esc(f.label)}</strong><br>
-          <span style="color:var(--brown-mid);font-size:0.78rem">${esc(f.detail)}</span>
-        </label>
+  // Show what was fixed (read-only summary, no checkboxes needed)
+  const fixes = res.fixes || {};
+  const summary = [...(fixes.appliedFixes || [])];
+  if (fixes.opfMetadataBlock) summary.unshift('OPF metadata rewritten');
+  if (fixes.ncxDocTitle) summary.unshift('NCX title corrected');
+  const fixPanel = document.getElementById('fix-panel');
+  if (summary.length && repairFile) {
+    document.getElementById('fix-list').innerHTML = summary.map(f => `
+      <li style="display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0.65rem;background:var(--cream);border-radius:6px;border:1px solid var(--warm-tan);font-size:0.84rem;color:var(--brown-dark)">
+        <span style="color:#5a8a5a;font-size:1rem">✓</span> ${esc(f)}
       </li>`).join('');
-    document.getElementById('fix-panel').style.display='block';
+    fixPanel.style.display = 'block';
   } else {
-    document.getElementById('fix-panel').style.display='none';
+    fixPanel.style.display = 'none';
   }
-
-  toast('Analysis complete!','success');
-}
-
-async function fixAndDownload() {
-  if (!repairFile) { toast('No epub file loaded','error'); return; }
-  if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-
-  const checked = id => document.getElementById('fix-cb-'+id)?.checked;
-  const meta = lastAnalysis?.suggestedMetadata || {};
-  const btn = document.getElementById('fix-download-btn');
-  btn.disabled = true; btn.textContent = '⏳ Patching…';
-  setStatus('fix-status','','');
-
-  try {
-    const ab = await repairFile.arrayBuffer();
-    const zip = await JSZip.loadAsync(ab);
-
-    // Find OPF path
-    let opfPath = null;
-    const cont = await zip.file('META-INF/container.xml')?.async('text');
-    if (cont) { const m=cont.match(/full-path="([^"]+\.opf)"/i); if(m) opfPath=m[1]; }
-    if (!opfPath) opfPath = Object.keys(zip.files).find(f=>f.endsWith('.opf'));
-
-    let fixes = [];
-
-    // ── PATCH OPF ──
-    if (opfPath) {
-      let opf = await zip.file(opfPath).async('text');
-      const origOpf = opf;
-
-      // Fix description
-      if (checked('opf-desc') && meta.description) {
-        const desc = meta.description.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        if (/<dc:description[^>]*>\s*<\/dc:description>/.test(opf) || !opf.includes('<dc:description')) {
-          if (opf.includes('<dc:description')) {
-            opf = opf.replace(/<dc:description[^>]*>[\s\S]*?<\/dc:description>/i, `<dc:description>${desc}</dc:description>`);
-          } else {
-            opf = opf.replace('</metadata>', `  <dc:description>${desc}</dc:description>\n   </metadata>`);
-          }
-          fixes.push('Added description');
-        }
-      }
-
-      // Fix series metadata (Calibre-compatible)
-      if (checked('opf-series') && meta.series) {
-        const seriesEsc = meta.series.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const idx = meta.seriesIndex || '1';
-        // Remove old calibre series tags if present
-        opf = opf.replace(/<meta name="calibre:series"[^/]*\/>/gi,'');
-        opf = opf.replace(/<meta name="calibre:series_index"[^/]*\/>/gi,'');
-        opf = opf.replace('</metadata>',
-          `  <meta name="calibre:series" content="${seriesEsc}"/>\n   <meta name="calibre:series_index" content="${idx}"/>\n   </metadata>`);
-        fixes.push(`Added series: ${meta.series}`);
-      }
-
-      // Fix author flip "Last, First" → "First Last"
-      if (checked('author-flip') && meta.author && meta.author.includes(',')) {
-        const parts = meta.author.split(',').map(s=>s.trim());
-        const normalized = parts.length===2 ? `${parts[1]} ${parts[0]}` : meta.author;
-        opf = opf.replace(/<dc:creator([^>]*)>([^<]+)<\/dc:creator>/gi, (match, attrs, name) => {
-          const fixed = name.trim().includes(',') ? normalized : name;
-          // Also fix opf:file-as
-          const newAttrs = attrs.replace(/opf:file-as="[^"]*"/, `opf:file-as="${meta.author}"`);
-          return `<dc:creator${newAttrs}>${fixed}</dc:creator>`;
-        });
-        fixes.push(`Normalized author to "${normalized}"`);
-      }
-
-      if (opf !== origOpf) zip.file(opfPath, opf);
-    }
-
-    // ── PATCH NCX ──
-    if (checked('ncx-title')) {
-      const ncxPath = Object.keys(zip.files).find(f=>f.endsWith('.ncx'));
-      if (ncxPath) {
-        let ncx = await zip.file(ncxPath).async('text');
-        if (/UnKnown|Unknown/i.test(ncx) || (meta.title && !ncx.includes(meta.title.slice(0,20)))) {
-          const title = (meta.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-          ncx = ncx.replace(/<docTitle>\s*<text>[^<]*<\/text>\s*<\/docTitle>/i,
-            `<docTitle><text>${title}</text></docTitle>`);
-          zip.file(ncxPath, ncx);
-          fixes.push('Fixed NCX title');
-        }
-      }
-    }
-
-    if (!fixes.length) {
-      setStatus('fix-status','No changes needed — all selected fixes were already correct.','info');
-      btn.disabled=false; btn.textContent='✨ Fix & Download Patched Epub'; return;
-    }
-
-    // Generate patched epub
-    const blob = await zip.generateAsync({type:'blob', mimeType:'application/epub+zip', compression:'DEFLATE', compressionOptions:{level:6}});
-    const origName = repairFile.name.replace(/\.epub$/i,'');
-    const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
-    a.download=`${origName}_fixed.epub`; a.click();
-    URL.revokeObjectURL(a.href);
-
-    setStatus('fix-status', `✓ Patched & downloaded! Fixes applied: ${fixes.join(', ')}.`, 'success');
-    toast(`Fixed ${fixes.length} issue${fixes.length>1?'s':''}!`, 'success');
-
-  } catch(err) {
-    setStatus('fix-status','Error: '+err.message,'error');
-    toast('Patch failed: '+err.message,'error');
-  }
-
-  btn.disabled=false; btn.textContent='✨ Fix & Download Patched Epub';
 }
 function renderMetaEditor(m) {
   const fields=[['title','Title'],['author','Author'],['language','Language'],['publisher','Publisher'],['publishDate','Publish Date'],['series','Series'],['seriesIndex','Series #'],['description','Description']];
