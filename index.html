@@ -7,626 +7,418 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%235c3d1e'/%3E%3Cpath d='M9 5 L9 27 L16 22 L23 27 L23 5 Z' fill='%23b04a1f'/%3E%3Cpath d='M12 10 L20 10' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M12 14 L18 14' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' opacity='0.6'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --cream:      #f5f0e8;
-      --parchment:  #ede5d0;
-      --warm-tan:   #d4c4a0;
-      --brown-mid:  #9a7c52;
-      --brown-dark: #5c3d1e;
-      --ink:        #2b1d0e;
-      --rust:       #b04a1f;
-      --rust-light: #d4623a;
-      --sage:       #7a8c6e;
-      --shadow:     rgba(43,29,14,0.12);
-      --shadow-md:  rgba(43,29,14,0.22);
+      --cream: #f5f0e8; --parchment: #ede5d0; --warm-tan: #d4c4a0;
+      --brown-mid: #9a7c52; --brown-dark: #5c3d1e; --ink: #2b1d0e;
+      --rust: #b04a1f; --rust-light: #d4623a; --sage: #7a8c6e;
+      --shadow: rgba(43,29,14,0.12); --shadow-md: rgba(43,29,14,0.22);
     }
-    html, body { height: 100%; background: var(--cream); color: var(--ink); font-family: 'Lora', Georgia, serif; font-size: 16px; line-height: 1.6; }
+    html, body { height:100%; background:var(--cream); color:var(--ink); font-family:'Lora',Georgia,serif; font-size:16px; line-height:1.6; }
     body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; }
 
-    /* ── AUTH SCREEN ── */
-    #auth-screen {
-      position: fixed; inset: 0; background: var(--cream);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 500; flex-direction: column; gap: 0;
-    }
-    #auth-screen.hidden { display: none; }
-    .auth-card {
-      background: var(--parchment);
-      border-radius: 14px;
-      padding: 2.5rem 2.25rem;
-      width: 100%; max-width: 400px;
-      box-shadow: 0 8px 40px var(--shadow-md);
-      text-align: center;
-    }
-    .auth-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.2rem; font-weight: 700; font-style: italic;
-      color: var(--brown-dark); margin-bottom: 0.25rem;
-      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    }
-    .auth-logo-mark {
-      width: 36px; height: 36px; background: var(--rust); border-radius: 3px 10px 3px 10px;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; color: var(--cream);
-    }
-    .auth-tagline { font-size: 0.85rem; color: var(--brown-mid); font-style: italic; margin-bottom: 2rem; }
-    .auth-label { display: block; text-align: left; font-size: 0.8rem; font-weight: 500; color: var(--brown-dark); margin-bottom: 0.35rem; }
-    .auth-input {
-      width: 100%; padding: 0.6rem 0.9rem;
-      border: 1.5px solid var(--warm-tan); border-radius: 7px;
-      background: var(--cream); font-family: 'Lora', serif; font-size: 0.9rem;
-      color: var(--ink); outline: none; margin-bottom: 1rem;
-      transition: border-color 0.2s;
-    }
-    .auth-input:focus { border-color: var(--rust); }
-    .auth-btn {
-      width: 100%; padding: 0.7rem; border: none; border-radius: 7px;
-      background: var(--rust); color: var(--cream);
-      font-family: 'Lora', serif; font-size: 0.95rem;
-      cursor: pointer; transition: background 0.2s, transform 0.15s;
-    }
-    .auth-btn:hover { background: var(--rust-light); transform: translateY(-1px); }
-    .auth-status { font-size: 0.82rem; margin-top: 0.85rem; min-height: 1.2rem; }
-    .auth-status.ok  { color: var(--sage); }
-    .auth-status.err { color: var(--rust); }
-    .auth-divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0; }
-    .auth-divider span { flex: 1; height: 1px; background: var(--warm-tan); }
-    .auth-divider small { font-size: 0.75rem; color: var(--brown-mid); white-space: nowrap; }
-    .auth-setup-note {
-      font-size: 0.75rem; color: var(--brown-mid); line-height: 1.6;
-      text-align: left; margin-top: 1.25rem;
-      padding-top: 1rem; border-top: 1px solid var(--warm-tan);
-    }
-    .auth-setup-note a { color: var(--rust); text-decoration: none; }
-    .auth-setup-note a:hover { text-decoration: underline; }
-    #config-form { margin-bottom: 1.25rem; }
-    .config-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
-    .auth-tab-row { display: flex; gap: 0; margin-bottom: 1.5rem; background: var(--cream); border-radius: 8px; padding: 0.3rem; border: 1.5px solid var(--warm-tan); }
-    .auth-tab { flex: 1; padding: 0.45rem; border: none; border-radius: 6px; font-family: 'Lora', serif; font-size: 0.85rem; cursor: pointer; background: transparent; color: var(--brown-mid); transition: all 0.2s; }
-    .auth-tab.active { background: var(--rust); color: var(--cream); }
+    /* HEADER */
+    header { background:var(--brown-dark); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:64px; box-shadow:0 2px 12px var(--shadow-md); position:sticky; top:0; z-index:100; }
+    .logo { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; font-style:italic; color:var(--parchment); letter-spacing:0.02em; display:flex; align-items:center; gap:0.5rem; }
+    .logo-mark { width:28px; height:28px; background:var(--rust); border-radius:2px 8px 2px 8px; display:inline-flex; align-items:center; justify-content:center; font-size:0.9rem; color:var(--cream); }
+    nav { display:flex; gap:0.25rem; }
+    .nav-btn { background:none; border:none; color:var(--warm-tan); font-family:'Lora',serif; font-size:0.875rem; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .nav-btn:hover { background:rgba(255,255,255,0.08); color:var(--cream); }
+    .nav-btn.active { background:var(--rust); color:var(--cream); }
+    .header-count { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--brown-mid); }
 
-    /* ── HEADER ── */
-    header { background: var(--brown-dark); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 64px; box-shadow: 0 2px 12px var(--shadow-md); position: sticky; top: 0; z-index: 100; }
-    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; font-style: italic; color: var(--parchment); letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; }
-    .logo-mark { width: 28px; height: 28px; background: var(--rust); border-radius: 2px 8px 2px 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--cream); }
-    nav { display: flex; gap: 0.25rem; }
-    .nav-btn { background: none; border: none; color: var(--warm-tan); font-family: 'Lora', serif; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.03em; }
-    .nav-btn:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
-    .nav-btn.active { background: var(--rust); color: var(--cream); }
-    .header-right { display: flex; align-items: center; gap: 0.75rem; }
-    .header-count { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--brown-mid); }
-    .signout-btn { background: none; border: 1px solid rgba(212,196,160,0.3); color: var(--warm-tan); font-family: 'Lora', serif; font-size: 0.75rem; padding: 0.3rem 0.7rem; border-radius: 5px; cursor: pointer; transition: all 0.2s; }
-    .signout-btn:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
+    /* MAIN */
+    main { max-width:1200px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+    .page { display:none; }
+    .page.active { display:block; }
+    .page-header { margin-bottom:2rem; padding-bottom:1rem; border-bottom:2px solid var(--warm-tan); display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+    .page-title { font-family:'Playfair Display',serif; font-size:2rem; font-weight:600; color:var(--brown-dark); line-height:1.2; }
+    .page-subtitle { font-size:0.875rem; color:var(--brown-mid); font-style:italic; margin-top:0.25rem; }
 
-    /* ── MAIN ── */
-    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-    .page { display: none; }
-    .page.active { display: block; }
+    /* SESSION BANNER */
+    .session-banner { background:var(--parchment); border:1.5px solid var(--warm-tan); border-radius:8px; padding:0.7rem 1rem; margin-bottom:1.5rem; display:none; align-items:center; gap:0.75rem; font-size:0.82rem; color:var(--brown-mid); }
+    .s-dot { width:8px; height:8px; border-radius:50%; background:var(--sage); flex-shrink:0; }
+    .s-dot.warn { background:#d4a820; }
 
-    /* ── PAGE HEADERS ── */
-    .page-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--warm-tan); display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-    .page-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 600; color: var(--brown-dark); line-height: 1.2; }
-    .page-subtitle { font-size: 0.875rem; color: var(--brown-mid); font-style: italic; margin-top: 0.25rem; }
+    /* BUTTONS */
+    .btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.55rem 1.2rem; border-radius:6px; border:none; font-family:'Lora',serif; font-size:0.875rem; cursor:pointer; transition:all 0.2s; text-decoration:none; }
+    .btn-primary { background:var(--rust); color:var(--cream); }
+    .btn-primary:hover { background:var(--rust-light); transform:translateY(-1px); box-shadow:0 4px 12px var(--shadow); }
+    .btn-secondary { background:var(--parchment); color:var(--brown-dark); border:1.5px solid var(--warm-tan); }
+    .btn-secondary:hover { background:var(--warm-tan); }
+    .btn-ghost { background:transparent; color:var(--brown-mid); border:1.5px solid var(--warm-tan); }
+    .btn-ghost:hover { background:var(--parchment); color:var(--ink); }
+    .btn-danger { background:transparent; color:#b04a1f; border:1.5px solid #d4a090; }
+    .btn-danger:hover { background:#fdf0ec; }
+    .btn-sm { padding:0.3rem 0.75rem; font-size:0.8rem; }
+    .btn-claude { background:#7c5cbf; color:#fff; }
+    .btn-claude:hover { background:#9370db; transform:translateY(-1px); }
 
-    /* ── BUTTONS ── */
-    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.2rem; border-radius: 6px; border: none; font-family: 'Lora', serif; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; text-decoration: none; }
-    .btn-primary { background: var(--rust); color: var(--cream); }
-    .btn-primary:hover { background: var(--rust-light); transform: translateY(-1px); box-shadow: 0 4px 12px var(--shadow); }
-    .btn-secondary { background: var(--parchment); color: var(--brown-dark); border: 1.5px solid var(--warm-tan); }
-    .btn-secondary:hover { background: var(--warm-tan); }
-    .btn-ghost { background: transparent; color: var(--brown-mid); border: 1.5px solid var(--warm-tan); }
-    .btn-ghost:hover { background: var(--parchment); color: var(--ink); }
-    .btn-danger { background: transparent; color: #b04a1f; border: 1.5px solid #d4a090; }
-    .btn-danger:hover { background: #fdf0ec; }
-    .btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
-    .btn-claude { background: #7c5cbf; color: #fff; }
-    .btn-claude:hover { background: #9370db; transform: translateY(-1px); }
+    /* UPLOAD ZONE */
+    .upload-zone { border:2px dashed var(--warm-tan); border-radius:12px; background:var(--parchment); padding:3rem 2rem; text-align:center; cursor:pointer; transition:all 0.25s; margin-bottom:2rem; }
+    .upload-zone:hover, .upload-zone.dragover { border-color:var(--rust); background:#f5ede0; transform:scale(1.005); }
+    .upload-icon { font-size:2.5rem; margin-bottom:0.75rem; display:block; }
+    .upload-zone h3 { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--brown-dark); margin-bottom:0.35rem; }
+    .upload-zone p { font-size:0.85rem; color:var(--brown-mid); }
+    #file-input-lib { display:none; }
 
-    /* ── UPLOAD ZONE ── */
-    .upload-zone { border: 2px dashed var(--warm-tan); border-radius: 12px; background: var(--parchment); padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.25s; margin-bottom: 2rem; }
-    .upload-zone:hover, .upload-zone.dragover { border-color: var(--rust); background: #f5ede0; transform: scale(1.005); }
-    .upload-icon { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
-    .upload-zone h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--brown-dark); margin-bottom: 0.35rem; }
-    .upload-zone p { font-size: 0.85rem; color: var(--brown-mid); }
-    #file-input-lib { display: none; }
+    /* TOOLBAR */
+    .toolbar { display:flex; gap:0.75rem; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; }
+    .search-input { flex:1; min-width:180px; padding:0.5rem 0.9rem; border:1.5px solid var(--warm-tan); border-radius:6px; background:var(--parchment); font-family:'Lora',serif; font-size:0.875rem; color:var(--ink); outline:none; transition:border-color 0.2s; }
+    .search-input:focus { border-color:var(--rust); }
+    .search-input::placeholder { color:var(--brown-mid); }
+    select.filter-select { padding:0.5rem 0.75rem; border:1.5px solid var(--warm-tan); border-radius:6px; background:var(--parchment); font-family:'Lora',serif; font-size:0.85rem; color:var(--ink); cursor:pointer; outline:none; }
 
-    /* ── TOOLBAR ── */
-    .toolbar { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .search-input { flex: 1; min-width: 180px; padding: 0.5rem 0.9rem; border: 1.5px solid var(--warm-tan); border-radius: 6px; background: var(--parchment); font-family: 'Lora', serif; font-size: 0.875rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
-    .search-input:focus { border-color: var(--rust); }
-    .search-input::placeholder { color: var(--brown-mid); }
-    select.filter-select { padding: 0.5rem 0.75rem; border: 1.5px solid var(--warm-tan); border-radius: 6px; background: var(--parchment); font-family: 'Lora', serif; font-size: 0.85rem; color: var(--ink); cursor: pointer; outline: none; }
-    select.filter-select:focus { border-color: var(--rust); }
+    /* BOOK GRID */
+    .book-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1.5rem; }
+    .book-card { background:var(--parchment); border-radius:8px; overflow:hidden; box-shadow:0 2px 8px var(--shadow); transition:all 0.22s; position:relative; }
+    .book-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px var(--shadow-md); }
+    .book-card.no-file { opacity:0.72; }
+    .book-cover { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; }
+    .book-cover-placeholder { width:100%; aspect-ratio:2/3; background:linear-gradient(145deg,var(--warm-tan),var(--brown-mid)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; color:var(--cream); font-size:2rem; }
+    .book-cover-placeholder span { font-family:'Playfair Display',serif; font-size:0.6rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; opacity:0.7; text-align:center; padding:0 0.5rem; }
+    .book-info { padding:0.65rem 0.75rem 0.75rem; }
+    .book-title { font-family:'Playfair Display',serif; font-size:0.8rem; font-weight:600; color:var(--brown-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .book-author { font-size:0.72rem; color:var(--brown-mid); font-style:italic; margin-top:0.15rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .book-tag { display:inline-block; background:var(--warm-tan); color:var(--brown-dark); font-size:0.65rem; padding:0.1rem 0.4rem; border-radius:3px; margin-top:0.3rem; font-family:'JetBrains Mono',monospace; }
+    .no-file-badge { display:inline-block; background:#fdf0ec; color:var(--rust); font-size:0.62rem; padding:0.1rem 0.4rem; border-radius:3px; margin-top:0.3rem; font-family:'JetBrains Mono',monospace; border:1px solid #e8b4a0; }
+    .book-actions { position:absolute; top:0.4rem; right:0.4rem; display:flex; flex-direction:column; gap:0.3rem; opacity:0; transition:opacity 0.2s; }
+    .book-card:hover .book-actions { opacity:1; }
+    .action-pill { background:rgba(43,29,14,0.75); color:var(--cream); border:none; border-radius:4px; font-size:0.65rem; padding:0.25rem 0.45rem; cursor:pointer; backdrop-filter:blur(4px); font-family:'Lora',serif; transition:background 0.15s; }
+    .action-pill:hover { background:var(--rust); }
 
-    /* ── BOOK GRID ── */
-    .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.5rem; }
-    .book-card { background: var(--parchment); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px var(--shadow); transition: all 0.22s; position: relative; }
-    .book-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px var(--shadow-md); }
-    .book-cover { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
-    .book-cover-placeholder { width: 100%; aspect-ratio: 2/3; background: linear-gradient(145deg, var(--warm-tan) 0%, var(--brown-mid) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--cream); font-size: 2rem; }
-    .book-cover-placeholder span { font-family: 'Playfair Display', serif; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; text-align: center; padding: 0 0.5rem; }
-    .book-info { padding: 0.65rem 0.75rem 0.75rem; }
-    .book-title { font-family: 'Playfair Display', serif; font-size: 0.8rem; font-weight: 600; color: var(--brown-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .book-author { font-size: 0.72rem; color: var(--brown-mid); font-style: italic; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .book-tag { display: inline-block; background: var(--warm-tan); color: var(--brown-dark); font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-top: 0.3rem; font-family: 'JetBrains Mono', monospace; }
-    .book-actions { position: absolute; top: 0.4rem; right: 0.4rem; display: flex; flex-direction: column; gap: 0.3rem; opacity: 0; transition: opacity 0.2s; }
-    .book-card:hover .book-actions { opacity: 1; }
-    .action-pill { background: rgba(43,29,14,0.75); color: var(--cream); border: none; border-radius: 4px; font-size: 0.65rem; padding: 0.25rem 0.45rem; cursor: pointer; backdrop-filter: blur(4px); font-family: 'Lora', serif; transition: background 0.15s; }
-    .action-pill:hover { background: var(--rust); }
-    .upload-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--warm-tan); }
-    .upload-progress-bar { height: 100%; background: var(--rust); transition: width 0.3s; width: 0%; }
+    /* EMPTY */
+    .empty-state { text-align:center; padding:4rem 2rem; color:var(--brown-mid); }
+    .empty-state .empty-icon { font-size:3rem; margin-bottom:1rem; opacity:0.5; }
+    .empty-state h3 { font-family:'Playfair Display',serif; font-size:1.2rem; margin-bottom:0.5rem; color:var(--brown-dark); }
 
-    /* ── EMPTY STATE ── */
-    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--brown-mid); }
-    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
-    .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--brown-dark); }
+    /* MODAL */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(43,29,14,0.5); z-index:200; display:none; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(3px); }
+    .modal-backdrop.open { display:flex; }
+    .modal { background:var(--cream); border-radius:12px; padding:2rem; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(43,29,14,0.35); animation:modal-in 0.25s ease; }
+    @keyframes modal-in { from { opacity:0; transform:translateY(12px) scale(0.97); } to { opacity:1; transform:none; } }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+    .modal-title { font-family:'Playfair Display',serif; font-size:1.25rem; color:var(--brown-dark); }
+    .modal-close { background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--brown-mid); }
+    .form-group { margin-bottom:1rem; }
+    .form-label { display:block; font-size:0.8rem; font-weight:500; color:var(--brown-dark); margin-bottom:0.35rem; }
+    .form-input { width:100%; padding:0.55rem 0.8rem; border:1.5px solid var(--warm-tan); border-radius:6px; background:var(--parchment); font-family:'Lora',serif; font-size:0.875rem; color:var(--ink); outline:none; transition:border-color 0.2s; }
+    .form-input:focus { border-color:var(--rust); }
+    .form-actions { display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.5rem; }
 
-    /* ── MODAL ── */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(43,29,14,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(3px); }
-    .modal-backdrop.open { display: flex; }
-    .modal { background: var(--cream); border-radius: 12px; padding: 2rem; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(43,29,14,0.35); animation: modal-in 0.25s ease; }
-    @keyframes modal-in { from { opacity:0; transform:translateY(12px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-    .modal-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--brown-dark); }
-    .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--brown-mid); line-height: 1; padding: 0.2rem; }
-    .modal-close:hover { color: var(--ink); }
-    .form-group { margin-bottom: 1rem; }
-    .form-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--brown-dark); margin-bottom: 0.35rem; letter-spacing: 0.03em; }
-    .form-input { width: 100%; padding: 0.55rem 0.8rem; border: 1.5px solid var(--warm-tan); border-radius: 6px; background: var(--parchment); font-family: 'Lora', serif; font-size: 0.875rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
-    .form-input:focus { border-color: var(--rust); }
-    .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    /* PANEL / COVERS */
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:2rem; align-items:start; }
+    @media(max-width:640px) { .two-col { grid-template-columns:1fr; } }
+    .panel { background:var(--parchment); border-radius:10px; padding:1.5rem; box-shadow:0 2px 8px var(--shadow); }
+    .panel-title { font-family:'Playfair Display',serif; font-size:1rem; color:var(--brown-dark); margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--warm-tan); }
+    .cover-preview-wrap { text-align:center; margin-bottom:1.25rem; }
+    .cover-ph { width:180px; height:260px; background:linear-gradient(145deg,var(--warm-tan),var(--brown-mid)); border-radius:4px; display:inline-flex; align-items:center; justify-content:center; font-size:3rem; }
+    .dz-small { border:2px dashed var(--warm-tan); border-radius:8px; padding:1.5rem; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--cream); font-size:0.85rem; color:var(--brown-mid); }
+    .dz-small:hover { border-color:var(--rust); color:var(--rust); }
+    .dz-small .dz-icon { font-size:1.5rem; display:block; margin-bottom:0.4rem; }
+    .steps-list { list-style:none; counter-reset:steps; }
+    .steps-list li { counter-increment:steps; display:flex; gap:0.75rem; align-items:flex-start; margin-bottom:1rem; font-size:0.875rem; }
+    .steps-list li::before { content:counter(steps); min-width:24px; height:24px; background:var(--rust); color:var(--cream); border-radius:50%; font-family:'Playfair Display',serif; font-size:0.75rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:0.1rem; }
 
-    /* ── COVER CHANGER ── */
-    .cover-changer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
-    @media (max-width: 640px) { .cover-changer-grid { grid-template-columns: 1fr; } }
-    .panel { background: var(--parchment); border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 8px var(--shadow); }
-    .panel-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--brown-dark); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--warm-tan); display: flex; align-items: center; gap: 0.5rem; }
-    .cover-preview-wrap { text-align: center; margin-bottom: 1.25rem; }
-    .cover-preview-placeholder { width: 180px; height: 260px; background: linear-gradient(145deg, var(--warm-tan), var(--brown-mid)); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 3rem; }
-    .drop-zone-small { border: 2px dashed var(--warm-tan); border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--cream); font-size: 0.85rem; color: var(--brown-mid); }
-    .drop-zone-small:hover { border-color: var(--rust); color: var(--rust); }
-    .drop-zone-small .dz-icon { font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
-    .steps-list { list-style: none; counter-reset: steps; }
-    .steps-list li { counter-increment: steps; display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1rem; font-size: 0.875rem; color: var(--ink); }
-    .steps-list li::before { content: counter(steps); min-width: 24px; height: 24px; background: var(--rust); color: var(--cream); border-radius: 50%; font-family: 'Playfair Display', serif; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem; }
+    /* KINDLE */
+    .kindle-layout { display:grid; grid-template-columns:1fr 340px; gap:2rem; align-items:start; }
+    @media(max-width:800px) { .kindle-layout { grid-template-columns:1fr; } }
+    .kindle-send-list { display:flex; flex-direction:column; gap:0.75rem; }
+    .kindle-item { background:var(--parchment); border-radius:8px; padding:1rem 1.2rem; display:flex; align-items:center; gap:1rem; box-shadow:0 1px 4px var(--shadow); transition:box-shadow 0.2s; }
+    .kindle-item:hover { box-shadow:0 4px 12px var(--shadow); }
+    .k-cover { width:40px; height:58px; border-radius:3px; object-fit:cover; flex-shrink:0; background:linear-gradient(145deg,var(--warm-tan),var(--brown-mid)); display:flex; align-items:center; justify-content:center; color:var(--cream); font-size:1.1rem; }
+    .k-info { flex:1; min-width:0; }
+    .k-title { font-family:'Playfair Display',serif; font-size:0.9rem; color:var(--brown-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .k-meta { font-size:0.75rem; color:var(--brown-mid); font-style:italic; margin-top:0.1rem; }
+    .k-check { width:18px; height:18px; border:1.5px solid var(--warm-tan); border-radius:4px; cursor:pointer; flex-shrink:0; background:var(--cream); display:flex; align-items:center; justify-content:center; font-size:0.7rem; transition:all 0.15s; }
+    .k-check.checked { background:var(--rust); border-color:var(--rust); color:var(--cream); }
+    .kindle-sidebar .panel { position:sticky; top:80px; }
+    .k-email { background:var(--cream); border:1.5px solid var(--warm-tan); border-radius:6px; padding:0.5rem 0.75rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--brown-dark); word-break:break-all; }
+    .sel-badge { background:var(--rust); color:var(--cream); border-radius:4px; padding:0.1rem 0.4rem; font-size:0.75rem; font-family:'JetBrains Mono',monospace; margin-left:auto; }
 
-    /* ── SEND TO KINDLE ── */
-    .kindle-layout { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start; }
-    @media (max-width: 800px) { .kindle-layout { grid-template-columns: 1fr; } }
-    .kindle-send-list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .kindle-item { background: var(--parchment); border-radius: 8px; padding: 1rem 1.2rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 4px var(--shadow); transition: box-shadow 0.2s; }
-    .kindle-item:hover { box-shadow: 0 4px 12px var(--shadow); }
-    .kindle-item-cover { width: 40px; height: 58px; border-radius: 3px; object-fit: cover; flex-shrink: 0; background: linear-gradient(145deg, var(--warm-tan), var(--brown-mid)); display: flex; align-items: center; justify-content: center; color: var(--cream); font-size: 1.1rem; }
-    .kindle-item-info { flex: 1; min-width: 0; }
-    .kindle-item-title { font-family: 'Playfair Display', serif; font-size: 0.9rem; color: var(--brown-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .kindle-item-meta { font-size: 0.75rem; color: var(--brown-mid); font-style: italic; margin-top: 0.1rem; }
-    .kindle-item-check { width: 18px; height: 18px; border: 1.5px solid var(--warm-tan); border-radius: 4px; cursor: pointer; flex-shrink: 0; background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--rust); transition: all 0.15s; }
-    .kindle-item-check.checked { background: var(--rust); border-color: var(--rust); color: var(--cream); }
-    .kindle-sidebar .panel { position: sticky; top: 80px; }
-    .kindle-email-display { background: var(--cream); border: 1.5px solid var(--warm-tan); border-radius: 6px; padding: 0.5rem 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--brown-dark); word-break: break-all; }
-    .send-count-badge { background: var(--rust); color: var(--cream); border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; margin-left: auto; }
+    /* REPAIR */
+    .repair-layout { display:grid; grid-template-columns:1fr 1fr; gap:2rem; align-items:start; }
+    @media(max-width:760px) { .repair-layout { grid-template-columns:1fr; } }
+    .mode-toggle { display:flex; gap:0.5rem; margin-bottom:1.5rem; background:var(--parchment); padding:0.35rem; border-radius:8px; border:1.5px solid var(--warm-tan); width:fit-content; }
+    .mode-btn { padding:0.4rem 1rem; border-radius:6px; border:none; font-family:'Lora',serif; font-size:0.82rem; cursor:pointer; background:transparent; color:var(--brown-mid); transition:all 0.2s; }
+    .mode-btn.active { background:var(--rust); color:var(--cream); }
+    .repair-dz { border:2px dashed var(--warm-tan); border-radius:12px; background:var(--parchment); padding:2.5rem 1.5rem; text-align:center; cursor:pointer; transition:all 0.25s; margin-bottom:1.25rem; }
+    .repair-dz:hover, .repair-dz.dragover { border-color:var(--rust); background:#f5ede0; }
+    .repair-dz .dz-icon { font-size:2.2rem; display:block; margin-bottom:0.6rem; }
+    .repair-dz h3 { font-family:'Playfair Display',serif; font-size:1rem; color:var(--brown-dark); margin-bottom:0.25rem; }
+    .repair-dz p { font-size:0.82rem; color:var(--brown-mid); }
+    .file-card { background:var(--parchment); border:1.5px solid var(--warm-tan); border-radius:8px; padding:0.85rem 1rem; display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; }
+    .file-card-name { font-family:'Playfair Display',serif; font-size:0.9rem; color:var(--brown-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .file-card-meta { font-size:0.75rem; color:var(--brown-mid); font-style:italic; }
+    .repair-results { display:none; }
+    .repair-results.visible { display:block; }
+    .r-section { margin-bottom:1.25rem; }
+    .r-section-title { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:600; color:var(--brown-dark); margin-bottom:0.6rem; }
+    .issue-list { list-style:none; display:flex; flex-direction:column; gap:0.4rem; }
+    .issue-item { display:flex; align-items:flex-start; gap:0.6rem; padding:0.55rem 0.75rem; border-radius:6px; font-size:0.84rem; line-height:1.45; }
+    .issue-item.critical { background:#fdf0ec; color:#7a2c0a; border-left:3px solid var(--rust); }
+    .issue-item.warning  { background:#fdf8ec; color:#7a5c10; border-left:3px solid #d4a820; }
+    .issue-item.info     { background:#f0f4ee; color:#3a5c2e; border-left:3px solid var(--sage); }
+    .issue-item.fixed    { background:#eef4eb; color:#3a5c2e; border-left:3px solid var(--sage); }
+    .issue-badge { font-size:0.65rem; font-family:'JetBrains Mono',monospace; padding:0.1rem 0.35rem; border-radius:3px; background:rgba(0,0,0,0.08); flex-shrink:0; margin-top:0.15rem; text-transform:uppercase; }
+    .meta-grid { display:grid; grid-template-columns:auto 1fr; gap:0.35rem 0.75rem; font-size:0.84rem; }
+    .meta-key { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--brown-mid); align-self:center; }
+    .meta-editable { background:var(--parchment); border:1.5px solid var(--warm-tan); border-radius:4px; padding:0.2rem 0.5rem; font-family:'Lora',serif; font-size:0.84rem; color:var(--ink); outline:none; width:100%; }
+    .meta-editable:focus { border-color:var(--rust); }
+    .score-bar { display:flex; align-items:center; gap:1rem; padding:1rem 1.25rem; background:var(--parchment); border-radius:8px; margin-bottom:1.25rem; border:1.5px solid var(--warm-tan); }
+    .score-circle { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; flex-shrink:0; }
+    .score-circle.good { background:#eef4eb; color:#3a6c2e; border:2px solid #8aba7e; }
+    .score-circle.ok   { background:#fdf8ec; color:#7a5c10; border:2px solid #d4b840; }
+    .score-circle.poor { background:#fdf0ec; color:#8a2c0e; border:2px solid var(--rust); }
+    .prompt-box { background:var(--cream); border:1.5px solid var(--warm-tan); border-radius:8px; padding:1rem; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--ink); white-space:pre-wrap; word-break:break-word; max-height:260px; overflow-y:auto; margin-bottom:1rem; line-height:1.55; }
+    .claude-bar { background:linear-gradient(135deg,#6b4fa0,#9370db); border-radius:8px; padding:1.25rem; text-align:center; margin-bottom:1.25rem; }
+    .claude-bar p { color:rgba(255,255,255,0.85); font-size:0.82rem; margin-bottom:0.85rem; line-height:1.5; }
+    .claude-bar a { display:inline-flex; align-items:center; gap:0.4rem; background:#fff; color:#6b4fa0; text-decoration:none; padding:0.55rem 1.2rem; border-radius:6px; font-family:'Lora',serif; font-size:0.875rem; transition:opacity 0.2s; }
+    .paste-area { width:100%; min-height:100px; padding:0.7rem; border:1.5px solid var(--warm-tan); border-radius:6px; background:var(--parchment); font-family:'Lora',serif; font-size:0.84rem; color:var(--ink); outline:none; resize:vertical; }
+    .paste-area:focus { border-color:var(--rust); }
+    .thinking-wrap { display:none; flex-direction:column; align-items:center; padding:2.5rem; text-align:center; gap:1rem; }
+    .thinking-wrap.visible { display:flex; }
+    .thinking-dots span { display:inline-block; width:8px; height:8px; background:var(--rust); border-radius:50%; margin:0 3px; animation:db 1.2s infinite ease-in-out; }
+    .thinking-dots span:nth-child(2) { animation-delay:0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes db { 0%,80%,100% { transform:translateY(0); opacity:0.4; } 40% { transform:translateY(-8px); opacity:1; } }
+    .thinking-label { font-family:'Playfair Display',serif; font-style:italic; color:var(--brown-mid); font-size:0.9rem; }
+    .thinking-phase { font-size:0.78rem; color:var(--brown-mid); font-family:'JetBrains Mono',monospace; }
 
-    /* ── REPAIR TAB ── */
-    .repair-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
-    @media (max-width: 760px) { .repair-layout { grid-template-columns: 1fr; } }
-    .repair-mode-toggle { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: var(--parchment); padding: 0.35rem; border-radius: 8px; border: 1.5px solid var(--warm-tan); width: fit-content; }
-    .mode-btn { padding: 0.4rem 1rem; border-radius: 6px; border: none; font-family: 'Lora', serif; font-size: 0.82rem; cursor: pointer; background: transparent; color: var(--brown-mid); transition: all 0.2s; }
-    .mode-btn.active { background: var(--rust); color: var(--cream); }
-    .repair-drop-zone { border: 2px dashed var(--warm-tan); border-radius: 12px; background: var(--parchment); padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.25s; margin-bottom: 1.25rem; }
-    .repair-drop-zone:hover, .repair-drop-zone.dragover { border-color: var(--rust); background: #f5ede0; }
-    .repair-drop-zone .dz-icon { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
-    .repair-drop-zone h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--brown-dark); margin-bottom: 0.25rem; }
-    .repair-drop-zone p { font-size: 0.82rem; color: var(--brown-mid); }
-    .file-loaded-card { background: var(--parchment); border: 1.5px solid var(--warm-tan); border-radius: 8px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-    .file-loaded-icon { font-size: 1.5rem; flex-shrink: 0; }
-    .file-loaded-info { flex: 1; min-width: 0; }
-    .file-loaded-name { font-family: 'Playfair Display', serif; font-size: 0.9rem; color: var(--brown-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .file-loaded-meta { font-size: 0.75rem; color: var(--brown-mid); font-style: italic; }
-    .repair-results { display: none; }
-    .repair-results.visible { display: block; }
-    .repair-section { margin-bottom: 1.25rem; }
-    .repair-section-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 600; color: var(--brown-dark); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
-    .issue-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
-    .issue-item { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.55rem 0.75rem; border-radius: 6px; font-size: 0.84rem; line-height: 1.45; }
-    .issue-item.critical { background: #fdf0ec; color: #7a2c0a; border-left: 3px solid var(--rust); }
-    .issue-item.warning  { background: #fdf8ec; color: #7a5c10; border-left: 3px solid #d4a820; }
-    .issue-item.info     { background: #f0f4ee; color: #3a5c2e; border-left: 3px solid var(--sage); }
-    .issue-item.fixed    { background: #eef4eb; color: #3a5c2e; border-left: 3px solid var(--sage); }
-    .issue-badge { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; padding: 0.1rem 0.35rem; border-radius: 3px; background: rgba(0,0,0,0.08); flex-shrink: 0; margin-top: 0.15rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    .metadata-grid { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 0.75rem; font-size: 0.84rem; }
-    .meta-key { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--brown-mid); padding-top: 0.1rem; align-self: center; }
-    .meta-val.editable { background: var(--parchment); border: 1.5px solid var(--warm-tan); border-radius: 4px; padding: 0.2rem 0.5rem; font-family: 'Lora', serif; font-size: 0.84rem; color: var(--ink); outline: none; width: 100%; }
-    .meta-val.editable:focus { border-color: var(--rust); }
-    .repair-score { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--parchment); border-radius: 8px; margin-bottom: 1.25rem; border: 1.5px solid var(--warm-tan); }
-    .score-circle { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; flex-shrink: 0; }
-    .score-circle.good { background: #eef4eb; color: #3a6c2e; border: 2px solid #8aba7e; }
-    .score-circle.ok   { background: #fdf8ec; color: #7a5c10; border: 2px solid #d4b840; }
-    .score-circle.poor { background: #fdf0ec; color: #8a2c0e; border: 2px solid var(--rust); }
-    .score-label { font-size: 0.82rem; color: var(--brown-mid); font-style: italic; }
-    .score-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--brown-dark); }
-
-    /* Claude mode panel */
-    .claude-prompt-box { background: var(--cream); border: 1.5px solid var(--warm-tan); border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--ink); white-space: pre-wrap; word-break: break-word; max-height: 260px; overflow-y: auto; margin-bottom: 1rem; line-height: 1.55; }
-    .claude-open-bar { background: linear-gradient(135deg, #6b4fa0, #9370db); border-radius: 8px; padding: 1.25rem; text-align: center; margin-bottom: 1rem; }
-    .claude-open-bar p { color: rgba(255,255,255,0.85); font-size: 0.82rem; margin-bottom: 0.85rem; line-height: 1.5; }
-    .claude-open-bar a { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; color: #6b4fa0; text-decoration: none; padding: 0.55rem 1.2rem; border-radius: 6px; font-family: 'Lora', serif; font-size: 0.875rem; font-weight: 500; transition: opacity 0.2s; }
-    .claude-open-bar a:hover { opacity: 0.88; }
-    .paste-area { width: 100%; min-height: 100px; padding: 0.7rem; border: 1.5px solid var(--warm-tan); border-radius: 6px; background: var(--parchment); font-family: 'Lora', serif; font-size: 0.84rem; color: var(--ink); outline: none; resize: vertical; }
-    .paste-area:focus { border-color: var(--rust); }
-
-    /* Thinking animation */
-    .thinking-wrap { display: none; flex-direction: column; align-items: center; padding: 2.5rem; text-align: center; gap: 1rem; }
-    .thinking-wrap.visible { display: flex; }
-    .thinking-dots span { display: inline-block; width: 8px; height: 8px; background: var(--rust); border-radius: 50%; margin: 0 3px; animation: dot-bounce 1.2s infinite ease-in-out; }
-    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes dot-bounce { 0%,80%,100% { transform:translateY(0); opacity:0.4; } 40% { transform:translateY(-8px); opacity:1; } }
-    .thinking-label { font-family: 'Playfair Display', serif; font-style: italic; color: var(--brown-mid); font-size: 0.9rem; }
-    .thinking-phase { font-size: 0.78rem; color: var(--brown-mid); font-family: 'JetBrains Mono', monospace; }
-
-    /* ── STATUS & TOAST ── */
-    .status-msg { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.85rem; margin-top: 1rem; display: none; }
-    .status-msg.success { background: #eef4eb; color: #3a5c2e; border: 1px solid #b8d4ae; display: block; }
-    .status-msg.error   { background: #fdf0ec; color: #8a2c0e; border: 1px solid #e8b4a0; display: block; }
-    .status-msg.info    { background: #f0ebe0; color: var(--brown-dark); border: 1px solid var(--warm-tan); display: block; }
-    .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 9000; display: flex; flex-direction: column; gap: 0.5rem; }
-    .toast { background: var(--brown-dark); color: var(--cream); padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-family: 'Lora', serif; box-shadow: 0 4px 16px var(--shadow-md); animation: toast-in 0.3s ease; max-width: 300px; }
-    .toast.toast-success { border-left: 3px solid var(--sage); }
-    .toast.toast-error   { border-left: 3px solid var(--rust); }
-    @keyframes toast-in { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--parchment); }
-    ::-webkit-scrollbar-thumb { background: var(--warm-tan); border-radius: 3px; }
+    /* STATUS / TOAST */
+    .status-msg { padding:0.75rem 1rem; border-radius:6px; font-size:0.85rem; margin-top:1rem; display:none; }
+    .status-msg.success { background:#eef4eb; color:#3a5c2e; border:1px solid #b8d4ae; display:block; }
+    .status-msg.error   { background:#fdf0ec; color:#8a2c0e; border:1px solid #e8b4a0; display:block; }
+    .status-msg.info    { background:#f0ebe0; color:var(--brown-dark); border:1px solid var(--warm-tan); display:block; }
+    .toast-container { position:fixed; bottom:2rem; right:2rem; z-index:9000; display:flex; flex-direction:column; gap:0.5rem; }
+    .toast { background:var(--brown-dark); color:var(--cream); padding:0.75rem 1.25rem; border-radius:8px; font-size:0.85rem; font-family:'Lora',serif; box-shadow:0 4px 16px var(--shadow-md); animation:ti 0.3s ease; max-width:300px; }
+    .toast.toast-success { border-left:3px solid var(--sage); }
+    .toast.toast-error   { border-left:3px solid var(--rust); }
+    @keyframes ti { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:var(--parchment); }
+    ::-webkit-scrollbar-thumb { background:var(--warm-tan); border-radius:3px; }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════
-     AUTH SCREEN
-══════════════════════════════════ -->
-<div id="auth-screen">
-  <div class="auth-card">
-    <div class="auth-logo"><span class="auth-logo-mark">𝔽</span> Folio</div>
-    <p class="auth-tagline">Your personal epub library</p>
-
-    <!-- Step 1: config (shown if not yet configured) -->
-    <div id="config-form">
-      <p style="font-size:0.82rem;color:var(--brown-mid);margin-bottom:1rem;text-align:left">
-        First time? Enter your Supabase project details below. You only do this once — they're saved in your browser.
-      </p>
-      <div class="config-row">
-        <div>
-          <label class="auth-label">Supabase URL</label>
-          <input class="auth-input" id="sb-url" placeholder="https://xxxx.supabase.co" />
-        </div>
-        <div>
-          <label class="auth-label">Anon Key</label>
-          <input class="auth-input" id="sb-key" placeholder="eyJhbGci…" />
-        </div>
-      </div>
-      <button class="auth-btn" style="margin-bottom:0.5rem" onclick="saveConfig()">Save & Continue</button>
-    </div>
-
-    <!-- Step 2: sign in / sign up -->
-    <div id="login-form" style="display:none">
-
-      <!-- Tab toggle -->
-      <div style="display:flex;gap:0.4rem;margin-bottom:1.25rem;background:var(--cream);padding:0.3rem;border-radius:7px;border:1.5px solid var(--warm-tan)">
-        <button id="tab-signin" onclick="setAuthTab('signin')"
-          style="flex:1;padding:0.4rem;border:none;border-radius:5px;font-family:'Lora',serif;font-size:0.85rem;cursor:pointer;background:var(--rust);color:var(--cream);transition:all 0.2s">
-          Sign In
-        </button>
-        <button id="tab-signup" onclick="setAuthTab('signup')"
-          style="flex:1;padding:0.4rem;border:none;border-radius:5px;font-family:'Lora',serif;font-size:0.85rem;cursor:pointer;background:transparent;color:var(--brown-mid);transition:all 0.2s">
-          Create Account
-        </button>
-      </div>
-
-      <label class="auth-label">Email</label>
-      <input class="auth-input" id="auth-email" type="email" placeholder="you@example.com" />
-      <label class="auth-label">Password</label>
-      <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" style="margin-bottom:0.25rem" />
-      <p id="signup-note" style="display:none;font-size:0.75rem;color:var(--brown-mid);text-align:left;margin-bottom:0.75rem">
-        Pick any password — 6 characters minimum.
-      </p>
-
-      <button class="auth-btn" id="auth-submit-btn" onclick="submitAuth()">Sign In</button>
-      <p class="auth-status" id="auth-status"></p>
-      <button class="btn btn-ghost btn-sm" style="margin-top:0.75rem;width:100%;justify-content:center" onclick="showConfig()">⚙ Change Supabase config</button>
-    </div>
-
-    <div class="auth-divider"><span></span><small>What is this?</small><span></span></div>
-    <p class="auth-setup-note">
-      Folio uses <a href="https://supabase.com" target="_blank">Supabase</a> (free tier) as its backend.
-      <a href="https://supabase.com/dashboard/new" target="_blank">Create a free project</a>, grab your URL and anon key from
-      <strong>Project Settings → API</strong>, then paste them above.<br><br>
-      In Supabase go to <strong>Authentication → Providers → Email</strong> and make sure
-      <em>"Confirm email"</em> is <strong>disabled</strong> — that way you can sign up and log in instantly with no email step.
-      Your data is locked to your account only via Row Level Security.
-    </p>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════
-     MAIN APP
-══════════════════════════════════ -->
 <header>
   <div class="logo"><span class="logo-mark">𝔽</span> Folio</div>
   <nav>
-    <button class="nav-btn active" onclick="switchPage('library', this)">📚 Library</button>
-    <button class="nav-btn" onclick="switchPage('covers', this)">🖼 Covers</button>
-    <button class="nav-btn" onclick="switchPage('kindle', this)">📨 Send to Kindle</button>
-    <button class="nav-btn" onclick="switchPage('repair', this)">🔧 Repair</button>
+    <button class="nav-btn active" onclick="switchPage('library',this)">📚 Library</button>
+    <button class="nav-btn" onclick="switchPage('covers',this)">🖼 Covers</button>
+    <button class="nav-btn" onclick="switchPage('kindle',this)">📨 Send to Kindle</button>
+    <button class="nav-btn" onclick="switchPage('repair',this)">🔧 Repair</button>
   </nav>
-  <div class="header-right">
-    <span class="header-count" id="header-count">0 books</span>
-    <button class="signout-btn" onclick="signOut()">Sign out</button>
-  </div>
+  <span class="header-count" id="header-count">0 books</span>
 </header>
 
 <main>
 
-  <!-- ══ LIBRARY ══ -->
-  <div class="page active" id="page-library">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Your Library</h1>
-        <p class="page-subtitle">All your epubs, organised just the way you like</p>
+<!-- ══ LIBRARY ══ -->
+<div class="page active" id="page-library">
+  <div class="page-header">
+    <div><h1 class="page-title">Your Library</h1><p class="page-subtitle">All your epubs, organised just the way you like</p></div>
+    <button class="btn btn-primary" onclick="document.getElementById('file-input-lib').click()">+ Add Books</button>
+  </div>
+  <input type="file" id="file-input-lib" multiple accept=".epub,.mobi,.azw3,.pdf" />
+  <div class="session-banner" id="session-banner">
+    <span class="s-dot" id="s-dot"></span><span id="s-msg"></span>
+  </div>
+  <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input-lib').click()">
+    <span class="upload-icon">📖</span>
+    <h3>Drop your epub files here</h3>
+    <p>or click to browse — .epub, .mobi, .azw3, .pdf</p>
+  </div>
+  <div class="toolbar">
+    <input class="search-input" type="text" id="search-input" placeholder="Search by title or author…" oninput="filterBooks()" />
+    <select class="filter-select" id="tag-filter" onchange="filterBooks()"><option value="">All tags</option></select>
+    <select class="filter-select" id="sort-select" onchange="filterBooks()">
+      <option value="added">Recently added</option>
+      <option value="title">Title A–Z</option>
+      <option value="author">Author A–Z</option>
+    </select>
+  </div>
+  <div class="book-grid" id="book-grid"></div>
+</div>
+
+<!-- ══ COVERS ══ -->
+<div class="page" id="page-covers">
+  <div class="page-header">
+    <div><h1 class="page-title">Cover Changer</h1><p class="page-subtitle">Replace the cover art on any book in your library</p></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="panel" style="margin-bottom:1.5rem">
+        <div class="panel-title">📘 Select a book</div>
+        <select class="form-input" id="cover-book-select" onchange="onCoverBookSelect()"><option value="">— choose from your library —</option></select>
+        <div class="cover-preview-wrap" style="margin-top:1.25rem">
+          <div class="cover-ph" id="cover-ph">📖</div>
+          <img id="cover-cur-img" src="" style="display:none;max-width:180px;max-height:260px;border-radius:4px;box-shadow:0 4px 16px rgba(43,29,14,0.22)" />
+          <p style="font-size:0.75rem;color:var(--brown-mid);margin-top:0.6rem;font-style:italic">Current cover</p>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="document.getElementById('file-input-lib').click()">+ Add Books</button>
+      <div class="panel">
+        <div class="panel-title">🖼 New cover image</div>
+        <div class="dz-small" id="new-cover-zone" onclick="document.getElementById('cover-img-input').click()">
+          <span class="dz-icon">⬆️</span>Drop or click to browse<br><small style="opacity:0.7">JPG, PNG, WEBP</small>
+        </div>
+        <input type="file" id="cover-img-input" accept="image/*" style="display:none" />
+        <div id="new-cover-wrap" style="text-align:center;margin-top:1rem;display:none">
+          <img id="new-cover-img" src="" style="max-width:160px;max-height:230px;border-radius:4px;box-shadow:0 4px 16px rgba(43,29,14,0.22)" />
+        </div>
+        <div style="margin-top:1.25rem;display:flex;gap:0.75rem;justify-content:flex-end">
+          <button class="btn btn-secondary" onclick="clearCover()">Clear</button>
+          <button class="btn btn-primary" onclick="applyCover()">Apply Cover</button>
+        </div>
+        <div id="cover-status" class="status-msg"></div>
+      </div>
     </div>
-    <input type="file" id="file-input-lib" multiple accept=".epub,.mobi,.azw3,.pdf" />
-    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input-lib').click()">
-      <span class="upload-icon">📖</span>
-      <h3>Drop your epub files here</h3>
-      <p>or click to browse — supports .epub, .mobi, .azw3, .pdf</p>
-    </div>
-    <div class="toolbar">
-      <input class="search-input" type="text" id="search-input" placeholder="Search by title or author…" oninput="filterBooks()" />
-      <select class="filter-select" id="tag-filter" onchange="filterBooks()">
-        <option value="">All tags</option>
-      </select>
-      <select class="filter-select" id="sort-select" onchange="filterBooks()">
-        <option value="added">Recently added</option>
-        <option value="title">Title A–Z</option>
-        <option value="author">Author A–Z</option>
-      </select>
-    </div>
-    <div class="book-grid" id="book-grid">
-      <div class="empty-state" style="grid-column:1/-1">
-        <div class="empty-icon">📚</div>
-        <h3>Your shelves are empty</h3>
-        <p>Drop some epub files above to get started.</p>
+    <div>
+      <div class="panel">
+        <div class="panel-title">💡 How it works</div>
+        <ul class="steps-list">
+          <li>Choose a book from your library.</li>
+          <li>Upload a new cover image (JPG or PNG, ideally 1600×2400 px).</li>
+          <li>Click <strong>Apply Cover</strong> — saved to localStorage, persists across sessions.</li>
+          <li>Re-download the epub and re-sideload to your device.</li>
+        </ul>
+      </div>
+      <div class="panel" style="margin-top:1.5rem">
+        <div class="panel-title">📐 Cover tips</div>
+        <p style="font-size:0.85rem;color:var(--brown-mid);line-height:1.7">Kindle Paperwhite displays at <strong style="color:var(--brown-dark)">1236×1648 px</strong>. Good sources: <em>Open Library</em>, <em>TheCoverDB</em>, or Canva.</p>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ══ COVERS ══ -->
-  <div class="page" id="page-covers">
-    <div class="page-header">
-      <div><h1 class="page-title">Cover Changer</h1><p class="page-subtitle">Replace the cover art on any epub in your library</p></div>
-    </div>
-    <div class="cover-changer-grid">
-      <div>
-        <div class="panel" style="margin-bottom:1.5rem">
-          <div class="panel-title">📘 Select a book</div>
-          <select class="form-input" id="cover-book-select" onchange="onCoverBookSelect()">
-            <option value="">— choose from your library —</option>
-          </select>
-          <div class="cover-preview-wrap" style="margin-top:1.25rem">
-            <div class="cover-preview-placeholder" id="cover-current-placeholder">📖</div>
-            <img id="cover-current-img" src="" style="display:none;max-width:180px;max-height:260px;border-radius:4px;box-shadow:0 4px 16px rgba(43,29,14,0.22)" />
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-title">🖼 New cover image</div>
-          <div class="drop-zone-small" id="new-cover-zone" onclick="document.getElementById('cover-img-input').click()">
-            <span class="dz-icon">⬆️</span>
-            Drop an image here or click to browse<br>
-            <small style="opacity:0.7">JPG, PNG, WEBP</small>
-          </div>
-          <input type="file" id="cover-img-input" accept="image/*" style="display:none" />
-          <div id="new-cover-preview-wrap" style="text-align:center;margin-top:1rem;display:none">
-            <img id="new-cover-preview" src="" style="max-width:160px;max-height:230px;border-radius:4px;box-shadow:0 4px 16px rgba(43,29,14,0.22)" />
-          </div>
-          <div style="margin-top:1.25rem;display:flex;gap:0.75rem;justify-content:flex-end">
-            <button class="btn btn-secondary" onclick="clearCoverChange()">Clear</button>
-            <button class="btn btn-primary" onclick="applyCoverChange()">Apply Cover</button>
-          </div>
-          <div id="cover-status" class="status-msg"></div>
-        </div>
+<!-- ══ KINDLE ══ -->
+<div class="page" id="page-kindle">
+  <div class="page-header">
+    <div><h1 class="page-title">Send to Kindle</h1><p class="page-subtitle">Deliver books to your device via Amazon's email</p></div>
+    <button class="btn btn-ghost btn-sm" onclick="openKindleSettings()">⚙ Kindle Settings</button>
+  </div>
+  <div class="kindle-layout">
+    <div>
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
+        <p style="font-size:0.875rem;color:var(--brown-mid);flex:1">Select books to send. Files must be loaded this session to download.</p>
+        <span class="sel-badge" id="selected-count">0 selected</span>
       </div>
-      <div>
-        <div class="panel">
-          <div class="panel-title">💡 How it works</div>
-          <ul class="steps-list">
-            <li>Choose a book from your library using the dropdown on the left.</li>
-            <li>Upload a new cover image (JPG or PNG, ideally 6×9 ratio — about 1600×2400 px).</li>
-            <li>Click <strong>Apply Cover</strong>. The new art is saved to your Supabase library.</li>
-            <li>Re-download the epub and re-sideload to your device.</li>
-          </ul>
-        </div>
-        <div class="panel" style="margin-top:1.5rem">
-          <div class="panel-title">📐 Cover tips</div>
-          <p style="font-size:0.85rem;color:var(--brown-mid);line-height:1.7">
-            Kindle Paperwhite displays covers at <strong style="color:var(--brown-dark)">1236 × 1648 px</strong>. Use a high-res JPG at that ratio for the sharpest result. Good sources: <em>Open Library</em>, <em>TheCoverDB</em>, or Canva.
-          </p>
-        </div>
+      <div class="kindle-send-list" id="kindle-list"></div>
+    </div>
+    <div class="kindle-sidebar">
+      <div class="panel">
+        <div class="panel-title">📧 Kindle Email</div>
+        <div class="form-group"><label class="form-label">Your Kindle email</label><div class="k-email" id="kindle-email-display">not set</div></div>
+        <div class="form-group"><label class="form-label">Sender email (approved by Amazon)</label><div class="k-email" id="sender-email-display">not set</div></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem" onclick="sendSelectedBooks()">📨 Send Selected</button>
+        <div id="kindle-status" class="status-msg"></div>
+      </div>
+      <div class="panel" style="margin-top:1.5rem">
+        <div class="panel-title">📋 Setup guide</div>
+        <ul class="steps-list">
+          <li>Go to <strong>Amazon → Manage Content → Preferences → Personal Document Settings</strong>.</li>
+          <li>Find your Kindle's Send-to-Kindle email.</li>
+          <li>Add your sender email to the Approved list.</li>
+          <li>Enter both in ⚙ Kindle Settings, select books and send.</li>
+        </ul>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ══ KINDLE ══ -->
-  <div class="page" id="page-kindle">
-    <div class="page-header">
-      <div><h1 class="page-title">Send to Kindle</h1><p class="page-subtitle">Deliver books straight to your device via Amazon's email</p></div>
-      <button class="btn btn-ghost btn-sm" onclick="openKindleSettings()">⚙ Kindle Settings</button>
-    </div>
-    <div class="kindle-layout">
-      <div>
-        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
-          <p style="font-size:0.875rem;color:var(--brown-mid);flex:1">Select books to send to your Kindle device.</p>
-          <span class="send-count-badge" id="selected-count">0 selected</span>
-        </div>
-        <div class="kindle-send-list" id="kindle-list">
-          <div class="empty-state" style="padding:2.5rem">
-            <div class="empty-icon">📨</div>
-            <h3>No books yet</h3>
-            <p>Add books in the Library tab first.</p>
-          </div>
-        </div>
+<!-- ══ REPAIR ══ -->
+<div class="page" id="page-repair">
+  <div class="page-header">
+    <div><h1 class="page-title">Repair &amp; Clean</h1><p class="page-subtitle">AI-powered epub diagnostics — fix metadata, nav &amp; structure issues</p></div>
+  </div>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="mode-btn-api" onclick="setRepairMode('api')">⚡ API (paid)</button>
+    <button class="mode-btn" id="mode-btn-free" onclick="setRepairMode('free')">✨ Free via Claude.ai</button>
+  </div>
+  <div id="api-key-bar" style="background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:8px;padding:0.85rem 1.1rem;display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <label style="font-size:0.8rem;color:var(--brown-dark);font-weight:500;white-space:nowrap">🔑 Anthropic API Key</label>
+    <input type="password" id="repair-api-key" placeholder="sk-ant-…" autocomplete="off" style="flex:1;min-width:180px;padding:0.4rem 0.75rem;border:1.5px solid var(--warm-tan);border-radius:5px;background:var(--cream);font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--ink);outline:none" />
+    <button class="btn btn-secondary btn-sm" onclick="saveRepairKey()">Save</button>
+    <span style="font-size:0.72rem;color:var(--brown-mid);font-style:italic;width:100%;margin-top:-0.25rem">Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--rust)">console.anthropic.com</a> — new accounts get $5 free (~200 analyses). Key saved to localStorage.</span>
+  </div>
+  <div id="free-mode-banner" class="claude-bar" style="display:none">
+    <p>No API key needed. Folio builds a prompt from your epub — open Claude.ai free, paste it in, paste the response back.</p>
+    <a href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
+  </div>
+  <div class="repair-layout">
+    <div>
+      <div class="repair-dz" id="repair-dz" onclick="document.getElementById('repair-file-input').click()">
+        <span class="dz-icon">📂</span>
+        <h3>Drop an epub here to analyse</h3>
+        <p>Or pick one from your library below</p>
       </div>
-      <div class="kindle-sidebar">
-        <div class="panel">
-          <div class="panel-title">📧 Kindle Email</div>
-          <div class="form-group">
-            <label class="form-label">Your Kindle email address</label>
-            <div class="kindle-email-display" id="kindle-email-display">not set</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Sender email (approved by Amazon)</label>
-            <div class="kindle-email-display" id="sender-email-display">not set</div>
-          </div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem" onclick="sendSelectedBooks()">📨 Send Selected Books</button>
-          <div id="kindle-status" class="status-msg"></div>
+      <input type="file" id="repair-file-input" accept=".epub" style="display:none" />
+      <div style="margin-bottom:1rem">
+        <select class="form-input" id="repair-lib-select" onchange="loadRepairFromLibrary()" style="font-size:0.85rem">
+          <option value="">— or pick from your library —</option>
+        </select>
+      </div>
+      <div id="repair-file-card" style="display:none" class="file-card">
+        <span style="font-size:1.5rem;flex-shrink:0">📄</span>
+        <div style="flex:1;min-width:0"><div class="file-card-name" id="repair-file-name">—</div><div class="file-card-meta" id="repair-file-meta">—</div></div>
+        <button class="btn btn-primary btn-sm" onclick="runRepair()">Analyse →</button>
+      </div>
+      <div class="thinking-wrap" id="repair-thinking">
+        <div class="thinking-dots"><span></span><span></span><span></span></div>
+        <div class="thinking-label">Reading your epub…</div>
+        <div class="thinking-phase" id="thinking-phase">Parsing structure</div>
+      </div>
+      <div id="free-prompt-section" style="display:none">
+        <div class="r-section-title" style="margin-bottom:0.5rem">📋 Copy this prompt into Claude.ai</div>
+        <div class="prompt-box" id="prompt-box"></div>
+        <div style="display:flex;gap:0.75rem;margin-bottom:1.25rem">
+          <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copy</button>
+          <a class="btn btn-claude btn-sm" id="free-claude-link" href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
         </div>
-        <div class="panel" style="margin-top:1.5rem">
-          <div class="panel-title">📋 Setup guide</div>
-          <ul class="steps-list">
-            <li>Go to <strong>Amazon → Manage Content → Preferences → Personal Document Settings</strong>.</li>
-            <li>Find your Kindle's Send-to-Kindle email address.</li>
-            <li>Add your sender email to the Approved list.</li>
-            <li>Enter both in <strong>⚙ Kindle Settings</strong>, then select books and send.</li>
-          </ul>
+        <div class="r-section-title" style="margin-bottom:0.5rem">📥 Paste Claude's response here</div>
+        <textarea class="paste-area" id="paste-area" placeholder="Paste Claude's JSON response here…"></textarea>
+        <button class="btn btn-primary" style="margin-top:0.75rem;width:100%;justify-content:center" onclick="parseFreeResponse()">Parse Response →</button>
+        <div id="free-parse-status" class="status-msg"></div>
+      </div>
+      <div class="repair-results" id="repair-results">
+        <div class="score-bar">
+          <div class="score-circle" id="score-circle">—</div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--brown-dark)" id="score-title">Health Score</div>
+            <div style="font-size:0.82rem;color:var(--brown-mid);font-style:italic" id="score-label">—</div>
+          </div>
         </div>
+        <div class="r-section"><div class="r-section-title">🚨 Issues Found</div><ul class="issue-list" id="issues-list"></ul></div>
+        <div class="r-section"><div class="r-section-title">✅ What Looks Good</div><ul class="issue-list" id="good-list"></ul></div>
+        <div class="r-section"><div class="r-section-title">💡 Recommendations</div><ul class="issue-list" id="recs-list"></ul></div>
+      </div>
+    </div>
+    <div>
+      <div class="panel" id="metadata-panel" style="display:none">
+        <div class="panel-title">📋 Metadata Editor</div>
+        <p style="font-size:0.8rem;color:var(--brown-mid);margin-bottom:1rem;font-style:italic">AI-suggested metadata. Edit and apply to your library.</p>
+        <div class="meta-grid" id="meta-grid"></div>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem">
+          <button class="btn btn-secondary btn-sm" onclick="resetMeta()">Reset</button>
+          <button class="btn btn-primary btn-sm" onclick="applyMeta()">Apply to Library</button>
+        </div>
+        <div id="meta-apply-status" class="status-msg"></div>
+      </div>
+      <div class="panel" style="margin-top:1.5rem">
+        <div class="panel-title">🔧 What this checks</div>
+        <ul class="steps-list">
+          <li><strong>Metadata</strong> — title, author, language, publisher, date, description.</li>
+          <li><strong>Navigation</strong> — NCX/TOC presence, chapter hierarchy, landmarks.</li>
+          <li><strong>File hygiene</strong> — missing spine items, broken links, malformed OPF.</li>
+          <li><strong>Cover image</strong> — embedded and meets Kindle size recommendations.</li>
+          <li><strong>Encoding</strong> — charset declarations, lang attributes.</li>
+        </ul>
       </div>
     </div>
   </div>
-
-  <!-- ══ REPAIR ══ -->
-  <div class="page" id="page-repair">
-    <div class="page-header">
-      <div><h1 class="page-title">Repair &amp; Clean</h1><p class="page-subtitle">AI-powered epub diagnostics — fix messy metadata, broken nav &amp; structure issues</p></div>
-    </div>
-
-    <!-- Mode toggle -->
-    <div class="repair-mode-toggle">
-      <button class="mode-btn active" id="mode-btn-api" onclick="setRepairMode('api')">⚡ API (paid)</button>
-      <button class="mode-btn" id="mode-btn-free" onclick="setRepairMode('free')">✨ Free via Claude.ai</button>
-    </div>
-
-    <!-- API key bar (API mode only) -->
-    <div id="api-key-bar" style="background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:8px;padding:0.85rem 1.1rem;display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
-      <label style="font-size:0.8rem;color:var(--brown-dark);font-weight:500;white-space:nowrap">🔑 Anthropic API Key</label>
-      <input type="password" id="repair-api-key" placeholder="sk-ant-…" autocomplete="off"
-        style="flex:1;min-width:180px;padding:0.4rem 0.75rem;border:1.5px solid var(--warm-tan);border-radius:5px;background:var(--cream);font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--ink);outline:none" />
-      <button class="btn btn-secondary btn-sm" onclick="saveRepairKey()">Save</button>
-      <span style="font-size:0.72rem;color:var(--brown-mid);font-style:italic;width:100%;margin-top:-0.25rem">
-        Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--rust)">console.anthropic.com</a> — new accounts get $5 free credit. Each analysis costs ~$0.01–0.03.
-      </span>
-    </div>
-
-    <!-- Free mode banner (free mode only) -->
-    <div id="free-mode-banner" style="display:none" class="claude-open-bar">
-      <p>No API key needed. Folio will build a detailed prompt from your epub's structure — you open Claude.ai (free), paste it, then paste the response back here.</p>
-      <a href="#" id="claude-open-link" target="_blank">Open Claude.ai ↗</a>
-    </div>
-
-    <div class="repair-layout">
-      <div>
-        <div class="repair-drop-zone" id="repair-drop-zone" onclick="document.getElementById('repair-file-input').click()">
-          <span class="dz-icon">📂</span>
-          <h3>Drop an epub here to analyse</h3>
-          <p>Or pick one from your library below</p>
-        </div>
-        <input type="file" id="repair-file-input" accept=".epub" style="display:none" />
-        <div style="margin-bottom:1rem">
-          <select class="form-input" id="repair-library-select" onchange="loadRepairFromLibrary()" style="font-size:0.85rem">
-            <option value="">— or pick from your library —</option>
-          </select>
-        </div>
-        <div id="repair-file-card" style="display:none" class="file-loaded-card">
-          <span class="file-loaded-icon">📄</span>
-          <div class="file-loaded-info">
-            <div class="file-loaded-name" id="repair-file-name">—</div>
-            <div class="file-loaded-meta" id="repair-file-meta">—</div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="runRepairAnalysis()">Analyse →</button>
-        </div>
-
-        <!-- Thinking state -->
-        <div class="thinking-wrap" id="repair-thinking">
-          <div class="thinking-dots"><span></span><span></span><span></span></div>
-          <div class="thinking-label">Reading your epub…</div>
-          <div class="thinking-phase" id="thinking-phase">Parsing structure</div>
-        </div>
-
-        <!-- Free mode: prompt box + paste area -->
-        <div id="free-mode-prompt-section" style="display:none">
-          <div class="repair-section-title" style="margin-bottom:0.5rem">📋 Generated prompt — copy this into Claude.ai</div>
-          <div class="claude-prompt-box" id="claude-prompt-box"></div>
-          <div style="display:flex;gap:0.75rem;margin-bottom:1rem">
-            <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copy Prompt</button>
-            <a class="btn btn-claude btn-sm" id="free-claude-link" href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
-          </div>
-          <div class="repair-section-title" style="margin-bottom:0.5rem">📥 Paste Claude's response here</div>
-          <textarea class="paste-area" id="claude-paste-area" placeholder="Paste Claude's JSON response here…"></textarea>
-          <button class="btn btn-primary" style="margin-top:0.75rem;width:100%;justify-content:center" onclick="parseFreeResponse()">Parse Response →</button>
-          <div id="free-parse-status" class="status-msg"></div>
-        </div>
-
-        <!-- Results -->
-        <div class="repair-results" id="repair-results">
-          <div class="repair-score" id="repair-score-bar">
-            <div class="score-circle" id="score-circle">—</div>
-            <div>
-              <div class="score-title" id="score-title">Health Score</div>
-              <div class="score-label" id="score-label">—</div>
-            </div>
-          </div>
-          <div class="repair-section">
-            <div class="repair-section-title">🚨 Issues Found</div>
-            <ul class="issue-list" id="issues-list"></ul>
-          </div>
-          <div class="repair-section">
-            <div class="repair-section-title">✅ What Looks Good</div>
-            <ul class="issue-list" id="good-list"></ul>
-          </div>
-          <div class="repair-section">
-            <div class="repair-section-title">💡 Recommendations</div>
-            <ul class="issue-list" id="recs-list"></ul>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="panel" id="metadata-panel" style="display:none">
-          <div class="panel-title">📋 Metadata Editor</div>
-          <p style="font-size:0.8rem;color:var(--brown-mid);margin-bottom:1rem;font-style:italic">AI-suggested clean metadata. Edit anything, then apply to your library.</p>
-          <div class="metadata-grid" id="metadata-grid"></div>
-          <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem">
-            <button class="btn btn-secondary btn-sm" onclick="resetMetadata()">Reset</button>
-            <button class="btn btn-primary btn-sm" onclick="applyMetadataToLibrary()">Apply to Library</button>
-          </div>
-          <div id="metadata-apply-status" class="status-msg"></div>
-        </div>
-        <div class="panel" style="margin-top:1.5rem">
-          <div class="panel-title">🔧 What this tool checks</div>
-          <ul class="steps-list">
-            <li><strong>Metadata completeness</strong> — title, author, language, publisher, date, description.</li>
-            <li><strong>Navigation structure</strong> — NCX/TOC presence, chapter hierarchy, landmarks.</li>
-            <li><strong>File hygiene</strong> — missing spine items, broken links, duplicate IDs, malformed OPF.</li>
-            <li><strong>Cover image</strong> — whether a cover is embedded and meets Kindle size recommendations.</li>
-            <li><strong>Encoding &amp; language</strong> — charset declarations, lang attributes.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
 
 </main>
 
@@ -637,892 +429,543 @@
     <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="edit-title" type="text" /></div>
     <div class="form-group"><label class="form-label">Author</label><input class="form-input" id="edit-author" type="text" /></div>
     <div class="form-group"><label class="form-label">Series / Tag</label><input class="form-input" id="edit-tag" type="text" placeholder="e.g. Fantasy, Cosmere, Series 1…" /></div>
-    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('edit-modal')">Cancel</button><button class="btn btn-primary" onclick="saveEditModal()">Save</button></div>
+    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('edit-modal')">Cancel</button><button class="btn btn-primary" onclick="saveEdit()">Save</button></div>
   </div>
 </div>
-
 <div class="modal-backdrop" id="delete-modal">
   <div class="modal" style="max-width:380px">
     <div class="modal-header"><h2 class="modal-title">Remove book?</h2><button class="modal-close" onclick="closeModal('delete-modal')">✕</button></div>
-    <p style="font-size:0.9rem;color:var(--brown-mid)">This will remove <strong id="delete-book-name" style="color:var(--ink)"></strong> from Folio and delete its file from storage.</p>
+    <p style="font-size:0.9rem;color:var(--brown-mid)">This removes <strong id="delete-name" style="color:var(--ink)"></strong> from Folio. Your original file is not affected.</p>
     <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('delete-modal')">Cancel</button><button class="btn btn-danger" onclick="confirmDelete()">Remove</button></div>
   </div>
 </div>
-
-<div class="modal-backdrop" id="kindle-settings-modal">
+<div class="modal-backdrop" id="kindle-modal">
   <div class="modal">
-    <div class="modal-header"><h2 class="modal-title">Kindle Settings</h2><button class="modal-close" onclick="closeModal('kindle-settings-modal')">✕</button></div>
+    <div class="modal-header"><h2 class="modal-title">Kindle Settings</h2><button class="modal-close" onclick="closeModal('kindle-modal')">✕</button></div>
     <div class="form-group"><label class="form-label">Your Kindle email address</label><input class="form-input" id="kindle-email-input" type="email" placeholder="yourname_abc123@kindle.com" /></div>
     <div class="form-group"><label class="form-label">Your sender email address</label><input class="form-input" id="sender-email-input" type="email" placeholder="you@gmail.com" /><p style="font-size:0.75rem;color:var(--brown-mid);margin-top:0.35rem">Must be approved in your Amazon account settings.</p></div>
-    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('kindle-settings-modal')">Cancel</button><button class="btn btn-primary" onclick="saveKindleSettings()">Save</button></div>
+    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('kindle-modal')">Cancel</button><button class="btn btn-primary" onclick="saveKindleSettings()">Save</button></div>
   </div>
 </div>
-
 <div class="toast-container" id="toast-container"></div>
 
 <script>
-// ════════════════════════════════════════════════════════
-//  CONFIGURATION — PASTE YOUR SUPABASE DETAILS HERE
-//  (or enter them in the UI and they'll be saved below)
-// ════════════════════════════════════════════════════════
-const HARDCODED_SB_URL = '';  // optional: 'https://xxxx.supabase.co'
-const HARDCODED_SB_KEY = '';  // optional: 'eyJhbGci...'
+// ══════════════════════════════════════════
+//  WHAT PERSISTS
+//  localStorage  → book metadata + cover art (base64) + settings + API key
+//  sessionStorage → actual epub file blobs (survive refresh, cleared on tab close)
+//  in-memory      → File objects re-attached from sessionStorage on load
+// ══════════════════════════════════════════
 
-// ════════════════════════════════
-//  SUPABASE INIT
-// ════════════════════════════════
-let sb = null;
-let currentUser = null;
+const LS  = 'folio_books';
+const SS  = 'folio_files'; // { [id]: { dataUrl, name } }
 
-function getSbConfig() {
-  return {
-    url: HARDCODED_SB_URL || localStorage.getItem('folio_sb_url') || '',
-    key: HARDCODED_SB_KEY || localStorage.getItem('folio_sb_key') || ''
-  };
-}
+function loadMeta() { try { return JSON.parse(localStorage.getItem(LS)||'[]'); } catch { return []; } }
 
-function initSupabase() {
-  const { url, key } = getSbConfig();
-  if (!url || !key) return false;
+function saveMeta() {
+  const rows = books.map(({id,title,author,tag,added,coverUrl,fileExt}) =>
+    ({id,title,author,tag,added,coverUrl:coverUrl||null,fileExt:fileExt||'.epub'}));
   try {
-    sb = supabase.createClient(url, key);
-    return true;
-  } catch(e) { return false; }
-}
-
-function saveConfig() {
-  const url = document.getElementById('sb-url').value.trim();
-  const key = document.getElementById('sb-key').value.trim();
-  if (!url || !key) { toast('Please enter both URL and key', 'error'); return; }
-  localStorage.setItem('folio_sb_url', url);
-  localStorage.setItem('folio_sb_key', key);
-  if (initSupabase()) {
-    document.getElementById('config-form').style.display = 'none';
-    document.getElementById('login-form').style.display = 'block';
-    setAuthTab('signin');
-  } else {
-    toast('Could not connect to Supabase — check your URL and key', 'error');
+    localStorage.setItem(LS, JSON.stringify(rows));
+  } catch {
+    // Probably full of cover art — save without covers
+    const slim = books.map(({id,title,author,tag,added,fileExt}) => ({id,title,author,tag,added,fileExt:fileExt||'.epub'}));
+    try { localStorage.setItem(LS, JSON.stringify(slim)); } catch {}
+    toast('Storage full — some covers may not persist. Consider clearing old entries.','error');
   }
 }
 
-function showConfig() {
-  document.getElementById('config-form').style.display = 'block';
-  document.getElementById('login-form').style.display = 'none';
+function ssLoad() { try { return JSON.parse(sessionStorage.getItem(SS)||'{}'); } catch { return {}; } }
+
+function ssSave(id, file) {
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const s = ssLoad(); s[id] = {dataUrl: ev.target.result, name: file.name};
+      sessionStorage.setItem(SS, JSON.stringify(s));
+    } catch {} // session storage full — skip
+  };
+  r.readAsDataURL(file);
 }
 
-// ── AUTH TAB TOGGLE ──
-let authTab = 'signin';
-function setAuthTab(tab) {
-  authTab = tab;
-  const isSignup = tab === 'signup';
-  document.getElementById('tab-signin').style.background = isSignup ? 'transparent' : 'var(--rust)';
-  document.getElementById('tab-signin').style.color    = isSignup ? 'var(--brown-mid)' : 'var(--cream)';
-  document.getElementById('tab-signup').style.background = isSignup ? 'var(--rust)' : 'transparent';
-  document.getElementById('tab-signup').style.color    = isSignup ? 'var(--cream)' : 'var(--brown-mid)';
-  document.getElementById('auth-submit-btn').textContent = isSignup ? 'Create Account' : 'Sign In';
-  document.getElementById('signup-note').style.display = isSignup ? 'block' : 'none';
-  authStatus('', '');
+function ssGet(id) {
+  const e = ssLoad()[id]; if (!e) return null;
+  try {
+    const [hdr,b64] = e.dataUrl.split(',');
+    const mime = hdr.match(/:(.*?);/)[1];
+    const bin = atob(b64); const arr = new Uint8Array(bin.length);
+    for (let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    return new File([arr], e.name, {type:mime});
+  } catch { return null; }
 }
 
-async function submitAuth() {
-  const email    = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-  if (!email || !password) { authStatus('Please enter your email and password.', 'err'); return; }
-  if (password.length < 6)  { authStatus('Password must be at least 6 characters.', 'err'); return; }
-
-  authStatus(authTab === 'signup' ? 'Creating account…' : 'Signing in…', '');
-  document.getElementById('auth-submit-btn').disabled = true;
-
-  let result;
-  if (authTab === 'signup') {
-    result = await sb.auth.signUp({ email, password });
-  } else {
-    result = await sb.auth.signInWithPassword({ email, password });
-  }
-
-  document.getElementById('auth-submit-btn').disabled = false;
-
-  if (result.error) {
-    // Surface friendly messages
-    const msg = result.error.message || '';
-    if (msg.includes('Invalid login')) authStatus('Wrong email or password.', 'err');
-    else if (msg.includes('already registered')) authStatus('Account exists — try signing in instead.', 'err');
-    else if (msg.includes('Email not confirmed')) authStatus('Disable "Confirm email" in Supabase → Auth → Providers → Email, then try again.', 'err');
-    else authStatus(msg, 'err');
-    return;
-  }
-
-  if (authTab === 'signup' && !result.data?.session) {
-    // Email confirmation is on — tell them to turn it off
-    authStatus('Almost! Go to Supabase → Authentication → Providers → Email and turn off "Confirm email", then sign in.', 'ok');
-    return;
-  }
-
-  currentUser = result.data.user || result.data.session?.user;
-  showApp();
-}
-
-function authStatus(msg, cls) {
-  const el = document.getElementById('auth-status');
-  el.textContent = msg; el.className = 'auth-status ' + cls;
-}
-
-async function signOut() {
-  if (sb) await sb.auth.signOut();
-  currentUser = null; books = [];
-  document.getElementById('auth-screen').classList.remove('hidden');
-  renderLibrary();
-}
-
-// ════════════════════════════════
-//  BOOT
-// ════════════════════════════════
+// ══ STATE ══
 let books = [];
-let editingId = null;
-let deletingId = null;
-let newCoverFile = null;
+let editingId = null, deletingId = null, newCoverFile = null;
 let selectedForKindle = new Set();
+let repairMode = 'api', repairFile = null, repairBookId = null, repairMetaSug = null;
 
-async function boot() {
-  const ready = initSupabase();
-  if (!ready) {
-    document.getElementById('config-form').style.display = 'block';
-    document.getElementById('login-form').style.display = 'none';
-    return;
-  }
+function genId() { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  // Pre-fill config fields
-  const { url, key } = getSbConfig();
-  document.getElementById('sb-url').value = url;
-  document.getElementById('sb-key').value = key;
+// ══ BOOT ══
+function boot() {
+  books = loadMeta().map(m => ({...m, file: ssGet(m.id)}));
+  const k = localStorage.getItem('folio_api_key');
+  if (k) { const el=document.getElementById('repair-api-key'); if(el) el.value=k; }
+  renderLibrary();
+  updateBanner();
+}
 
-  // Check for existing session
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    showApp();
+function updateBanner() {
+  const n=books.length, loaded=books.filter(b=>b.file).length;
+  const banner=document.getElementById('session-banner');
+  if (!n) { banner.style.display='none'; return; }
+  banner.style.display='flex';
+  const dot=document.getElementById('s-dot'), msg=document.getElementById('s-msg');
+  if (loaded===n) {
+    dot.className='s-dot';
+    msg.innerHTML=`<strong>${n} book${n!==1?'s':''}</strong> — metadata &amp; covers saved. All files loaded this session ✓`;
+  } else if (loaded===0) {
+    dot.className='s-dot warn';
+    msg.innerHTML=`<strong>${n} book${n!==1?'s':''}</strong> — metadata &amp; covers saved. <strong>Re-upload epub files</strong> this session to download or repair.`;
   } else {
-    document.getElementById('config-form').style.display = 'none';
-    document.getElementById('login-form').style.display = 'block';
-    setAuthTab('signin');
-  }
-
-  // Keep session alive if it refreshes in background
-  sb.auth.onAuthStateChange((_event, session) => {
-    if (session && !currentUser) {
-      currentUser = session.user;
-      showApp();
-    }
-  });
-}
-
-async function showApp() {
-  document.getElementById('auth-screen').classList.add('hidden');
-  await ensureSchema();
-  await loadBooksFromDB();
-  renderLibrary();
-}
-
-// ════════════════════════════════
-//  DATABASE SCHEMA (auto-create)
-// ════════════════════════════════
-async function ensureSchema() {
-  // We just try to query; if table doesn't exist the user needs to create it.
-  // We'll show a helpful message.
-  const { error } = await sb.from('books').select('id').limit(1);
-  if (error && error.code === '42P01') {
-    // Table doesn't exist — show setup SQL
-    toast('Run the setup SQL in your Supabase SQL editor (see README)', 'error');
+    dot.className='s-dot warn';
+    msg.innerHTML=`<strong>${n} books</strong> — ${loaded} files loaded, ${n-loaded} need re-uploading to download or repair.`;
   }
 }
 
-// ════════════════════════════════
-//  DB OPERATIONS
-// ════════════════════════════════
-async function loadBooksFromDB() {
-  if (!sb || !currentUser) return;
-  const { data, error } = await sb.from('books')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false });
-  if (error) { toast('Could not load library: ' + error.message, 'error'); return; }
-  books = (data || []).map(row => ({
-    id: row.id,
-    title: row.title,
-    author: row.author || 'Unknown Author',
-    tag: row.tag || '',
-    added: new Date(row.created_at).getTime(),
-    coverUrl: row.cover_url || null,
-    storageKey: row.storage_key || null,
-    fileExt: row.file_ext || '.epub',
-    file: null, // files are in Supabase Storage, not in memory
-  }));
-}
-
-async function saveBookToDB(book) {
-  if (!sb || !currentUser) return;
-  const { error } = await sb.from('books').upsert({
-    id: book.id,
-    user_id: currentUser.id,
-    title: book.title,
-    author: book.author,
-    tag: book.tag,
-    cover_url: book.coverUrl,
-    storage_key: book.storageKey,
-    file_ext: book.fileExt,
-  });
-  if (error) toast('Save error: ' + error.message, 'error');
-}
-
-async function deleteBookFromDB(id) {
-  if (!sb || !currentUser) return;
-  const book = books.find(b => b.id === id);
-  // Delete file from storage
-  if (book && book.storageKey) {
-    await sb.storage.from('epub-files').remove([book.storageKey]);
-  }
-  const { error } = await sb.from('books').delete().eq('id', id).eq('user_id', currentUser.id);
-  if (error) toast('Delete error: ' + error.message, 'error');
-}
-
-async function uploadFileToStorage(file, bookId) {
-  const ext = '.' + file.name.split('.').pop().toLowerCase();
-  const storageKey = `${currentUser.id}/${bookId}${ext}`;
-  const { error } = await sb.storage.from('epub-files').upload(storageKey, file, { upsert: true });
-  if (error) { toast('Upload error: ' + error.message, 'error'); return null; }
-  return storageKey;
-}
-
-async function getDownloadUrl(storageKey) {
-  const { data, error } = await sb.storage.from('epub-files').createSignedUrl(storageKey, 3600);
-  if (error) { toast('Could not get download link', 'error'); return null; }
-  return data.signedUrl;
-}
-
-// ════════════════════════════════
-//  NAV
-// ════════════════════════════════
+// ══ NAV ══
 function switchPage(name, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'kindle') renderKindleList();
-  if (name === 'covers') populateCoverSelect();
-  if (name === 'repair') populateRepairSelect();
+  if (name==='kindle') renderKindleList();
+  if (name==='covers') populateCoverSelect();
+  if (name==='repair') populateRepairSelect();
 }
 
-// ════════════════════════════════
-//  FILE UPLOAD
-// ════════════════════════════════
-function genId() { return crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)); }
+// ══ FILE UPLOAD ══
+document.getElementById('file-input-lib').addEventListener('change', e=>handleFiles(e.target.files));
+const uz=document.getElementById('upload-zone');
+uz.addEventListener('dragover', e=>{e.preventDefault(); uz.classList.add('dragover');});
+uz.addEventListener('dragleave', ()=>uz.classList.remove('dragover'));
+uz.addEventListener('drop', e=>{e.preventDefault(); uz.classList.remove('dragover'); handleFiles(e.dataTransfer.files);});
 
-document.getElementById('file-input-lib').addEventListener('change', e => handleFiles(e.target.files));
-const uploadZone = document.getElementById('upload-zone');
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-
-async function handleFiles(files) {
-  const supported = ['.epub','.mobi','.azw3','.pdf'];
-  const toUpload = Array.from(files).filter(f => supported.includes('.' + f.name.split('.').pop().toLowerCase()));
-  if (!toUpload.length) return;
-
-  toast(`Uploading ${toUpload.length} book${toUpload.length > 1 ? 's' : ''}…`, 'success');
-
-  for (const file of toUpload) {
-    const ext = '.' + file.name.split('.').pop().toLowerCase();
-    const title = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-    const id = genId();
-
-    // Upload file to Supabase Storage
-    const storageKey = await uploadFileToStorage(file, id);
-
-    const book = {
-      id, title,
-      author: 'Unknown Author',
-      tag: '', added: Date.now(),
-      file, fileExt: ext,
-      coverUrl: null,
-      storageKey,
-    };
-    books.unshift(book);
-    await saveBookToDB(book);
-  }
-
-  renderLibrary();
-  toast(`Added ${toUpload.length} book${toUpload.length > 1 ? 's' : ''} to your library`, 'success');
+function handleFiles(files) {
+  const ok=['.epub','.mobi','.azw3','.pdf']; let added=0;
+  Array.from(files).forEach(file=>{
+    const ext='.'+file.name.split('.').pop().toLowerCase();
+    if (!ok.includes(ext)) return;
+    const id=genId();
+    const title=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+    books.unshift({id, title, author:'Unknown Author', tag:'', added:Date.now(), file, fileExt:ext, coverUrl:null});
+    ssSave(id, file); added++;
+  });
+  if (added) { saveMeta(); renderLibrary(); updateBanner(); toast(`Added ${added} book${added>1?'s':''}`,'success'); }
 }
 
-// ════════════════════════════════
-//  RENDER LIBRARY
-// ════════════════════════════════
+// ══ LIBRARY ══
 function filterBooks() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const tag = document.getElementById('tag-filter').value;
-  const sort = document.getElementById('sort-select').value;
-  let list = [...books];
-  if (q) list = list.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
-  if (tag) list = list.filter(b => b.tag === tag);
-  if (sort === 'title') list.sort((a,b) => a.title.localeCompare(b.title));
-  else if (sort === 'author') list.sort((a,b) => a.author.localeCompare(b.author));
-  else list.sort((a,b) => b.added - a.added);
+  const q=document.getElementById('search-input').value.toLowerCase();
+  const tag=document.getElementById('tag-filter').value;
+  const sort=document.getElementById('sort-select').value;
+  let list=[...books];
+  if (q) list=list.filter(b=>b.title.toLowerCase().includes(q)||b.author.toLowerCase().includes(q));
+  if (tag) list=list.filter(b=>b.tag===tag);
+  if (sort==='title') list.sort((a,b)=>a.title.localeCompare(b.title));
+  else if (sort==='author') list.sort((a,b)=>a.author.localeCompare(b.author));
+  else list.sort((a,b)=>b.added-a.added);
   renderGrid(list);
 }
 
 function renderLibrary() {
-  const tags = [...new Set(books.map(b => b.tag).filter(Boolean))];
-  const sel = document.getElementById('tag-filter');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">All tags</option>';
-  tags.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; if (t===cur) o.selected=true; sel.appendChild(o); });
-  document.getElementById('header-count').textContent = `${books.length} book${books.length!==1?'s':''}`;
+  const tags=[...new Set(books.map(b=>b.tag).filter(Boolean))];
+  const sel=document.getElementById('tag-filter'), cur=sel.value;
+  sel.innerHTML='<option value="">All tags</option>';
+  tags.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===cur)o.selected=true;sel.appendChild(o);});
+  document.getElementById('header-count').textContent=`${books.length} book${books.length!==1?'s':''}`;
   filterBooks();
 }
 
 function renderGrid(list) {
-  const grid = document.getElementById('book-grid');
+  const g=document.getElementById('book-grid');
   if (!list.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📚</div><h3>${books.length?'No results':'Your shelves are empty'}</h3><p>${books.length?'Try adjusting your search.':'Drop some epub files above to get started.'}</p></div>`;
+    g.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📚</div><h3>${books.length?'No results':'Your shelves are empty'}</h3><p>${books.length?'Try adjusting your search.':'Drop some epub files above to get started.'}</p></div>`;
     return;
   }
-  grid.innerHTML = list.map(b => `
-    <div class="book-card" id="card-${b.id}">
-      ${b.coverUrl ? `<img class="book-cover" src="${b.coverUrl}" alt="${esc(b.title)}" />` : `<div class="book-cover-placeholder">📖<span>${esc(b.title.slice(0,18))}</span></div>`}
+  g.innerHTML=list.map(b=>`
+    <div class="book-card${b.file?'':' no-file'}" id="card-${b.id}">
+      ${b.coverUrl?`<img class="book-cover" src="${b.coverUrl}" alt="${esc(b.title)}" />`:`<div class="book-cover-placeholder">📖<span>${esc(b.title.slice(0,18))}</span></div>`}
       <div class="book-actions">
         <button class="action-pill" onclick="openEditModal('${b.id}')">✏ Edit</button>
         <button class="action-pill" onclick="openDeleteModal('${b.id}')">🗑 Remove</button>
-        ${b.storageKey ? `<button class="action-pill" onclick="downloadBook('${b.id}')">⬇ Download</button>` : ''}
+        ${b.file?`<button class="action-pill" onclick="downloadBook('${b.id}')">⬇ Download</button>`:`<button class="action-pill" onclick="document.getElementById('file-input-lib').click()">⬆ Re-upload</button>`}
       </div>
       <div class="book-info">
         <div class="book-title">${esc(b.title)}</div>
         <div class="book-author">${esc(b.author)}</div>
-        ${b.tag ? `<span class="book-tag">${esc(b.tag)}</span>` : ''}
+        ${b.tag?`<span class="book-tag">${esc(b.tag)}</span>`:''}
+        ${!b.file?`<span class="no-file-badge">no file loaded</span>`:''}
       </div>
     </div>`).join('');
 }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ════════════════════════════════
-//  EDIT MODAL
-// ════════════════════════════════
+// ══ EDIT ══
 function openEditModal(id) {
-  editingId = id;
-  const b = books.find(x => x.id === id);
-  document.getElementById('edit-title').value = b.title;
-  document.getElementById('edit-author').value = b.author;
-  document.getElementById('edit-tag').value = b.tag || '';
+  editingId=id; const b=books.find(x=>x.id===id);
+  document.getElementById('edit-title').value=b.title;
+  document.getElementById('edit-author').value=b.author;
+  document.getElementById('edit-tag').value=b.tag||'';
   openModal('edit-modal');
 }
-
-async function saveEditModal() {
-  const b = books.find(x => x.id === editingId);
-  b.title  = document.getElementById('edit-title').value.trim() || b.title;
-  b.author = document.getElementById('edit-author').value.trim() || b.author;
-  b.tag    = document.getElementById('edit-tag').value.trim();
-  closeModal('edit-modal');
-  await saveBookToDB(b);
-  renderLibrary();
-  toast('Book details updated', 'success');
+function saveEdit() {
+  const b=books.find(x=>x.id===editingId);
+  b.title=document.getElementById('edit-title').value.trim()||b.title;
+  b.author=document.getElementById('edit-author').value.trim()||b.author;
+  b.tag=document.getElementById('edit-tag').value.trim();
+  closeModal('edit-modal'); saveMeta(); renderLibrary(); toast('Book updated','success');
 }
 
-// ════════════════════════════════
-//  DELETE MODAL
-// ════════════════════════════════
+// ══ DELETE ══
 function openDeleteModal(id) {
-  deletingId = id;
-  const b = books.find(x => x.id === id);
-  document.getElementById('delete-book-name').textContent = `"${b.title}"`;
+  deletingId=id;
+  document.getElementById('delete-name').textContent=`"${books.find(x=>x.id===id).title}"`;
   openModal('delete-modal');
 }
-
-async function confirmDelete() {
-  await deleteBookFromDB(deletingId);
-  books = books.filter(x => x.id !== deletingId);
-  closeModal('delete-modal');
-  renderLibrary();
-  toast('Book removed', 'success');
+function confirmDelete() {
+  books=books.filter(x=>x.id!==deletingId);
+  try { const s=ssLoad(); delete s[deletingId]; sessionStorage.setItem(SS,JSON.stringify(s)); } catch {}
+  closeModal('delete-modal'); saveMeta(); renderLibrary(); updateBanner(); toast('Book removed','success');
 }
 
-// ════════════════════════════════
-//  DOWNLOAD
-// ════════════════════════════════
-async function downloadBook(id) {
-  const b = books.find(x => x.id === id);
-  if (!b) return;
-  // If file is in memory (just uploaded), use it directly
-  if (b.file) {
-    const url = URL.createObjectURL(b.file);
-    const a = document.createElement('a'); a.href = url; a.download = b.file.name; a.click();
-    URL.revokeObjectURL(url); return;
-  }
-  // Otherwise fetch signed URL from Supabase Storage
-  if (b.storageKey) {
-    toast('Getting download link…', 'success');
-    const url = await getDownloadUrl(b.storageKey);
-    if (url) { window.open(url, '_blank'); }
-  }
+// ══ DOWNLOAD ══
+function downloadBook(id) {
+  const b=books.find(x=>x.id===id);
+  if (!b||!b.file) { toast('Re-upload this file first','error'); return; }
+  const url=URL.createObjectURL(b.file);
+  const a=document.createElement('a'); a.href=url; a.download=b.file.name; a.click();
+  URL.revokeObjectURL(url);
 }
 
-// ════════════════════════════════
-//  COVER CHANGER
-// ════════════════════════════════
+// ══ COVERS ══
 function populateCoverSelect() {
-  const sel = document.getElementById('cover-book-select');
-  sel.innerHTML = '<option value="">— choose from your library —</option>';
-  books.forEach(b => { const o = document.createElement('option'); o.value = b.id; o.textContent = `${b.title} — ${b.author}`; sel.appendChild(o); });
+  const sel=document.getElementById('cover-book-select');
+  sel.innerHTML='<option value="">— choose from your library —</option>';
+  books.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=`${b.title} — ${b.author}`;sel.appendChild(o);});
 }
-
 function onCoverBookSelect() {
-  const id = document.getElementById('cover-book-select').value;
-  const ph = document.getElementById('cover-current-placeholder');
-  const img = document.getElementById('cover-current-img');
+  const id=document.getElementById('cover-book-select').value;
+  const ph=document.getElementById('cover-ph'), img=document.getElementById('cover-cur-img');
   if (!id) { ph.style.display='flex'; img.style.display='none'; return; }
-  const b = books.find(x => x.id === id);
-  if (b && b.coverUrl) { img.src = b.coverUrl; img.style.display='block'; ph.style.display='none'; }
+  const b=books.find(x=>x.id===id);
+  if (b&&b.coverUrl) { img.src=b.coverUrl; img.style.display='block'; ph.style.display='none'; }
   else { ph.style.display='flex'; img.style.display='none'; }
 }
-
-document.getElementById('cover-img-input').addEventListener('change', e => {
-  const file = e.target.files[0]; if (!file) return;
-  newCoverFile = file;
-  const r = new FileReader();
-  r.onload = ev => { document.getElementById('new-cover-preview').src = ev.target.result; document.getElementById('new-cover-preview-wrap').style.display='block'; };
-  r.readAsDataURL(file);
+document.getElementById('cover-img-input').addEventListener('change', e=>{
+  const f=e.target.files[0]; if (!f) return; newCoverFile=f;
+  const r=new FileReader(); r.onload=ev=>{document.getElementById('new-cover-img').src=ev.target.result; document.getElementById('new-cover-wrap').style.display='block';}; r.readAsDataURL(f);
 });
-
-const newCoverZone = document.getElementById('new-cover-zone');
-newCoverZone.addEventListener('dragover', e => { e.preventDefault(); newCoverZone.style.borderColor='var(--rust)'; });
-newCoverZone.addEventListener('dragleave', () => newCoverZone.style.borderColor='');
-newCoverZone.addEventListener('drop', e => {
-  e.preventDefault(); newCoverZone.style.borderColor='';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) { newCoverFile = file; const r = new FileReader(); r.onload = ev => { document.getElementById('new-cover-preview').src = ev.target.result; document.getElementById('new-cover-preview-wrap').style.display='block'; }; r.readAsDataURL(file); }
+const ncz=document.getElementById('new-cover-zone');
+ncz.addEventListener('dragover',e=>{e.preventDefault();ncz.style.borderColor='var(--rust)';});
+ncz.addEventListener('dragleave',()=>ncz.style.borderColor='');
+ncz.addEventListener('drop',e=>{
+  e.preventDefault(); ncz.style.borderColor='';
+  const f=e.dataTransfer.files[0];
+  if (f&&f.type.startsWith('image/')) { newCoverFile=f; const r=new FileReader(); r.onload=ev=>{document.getElementById('new-cover-img').src=ev.target.result; document.getElementById('new-cover-wrap').style.display='block';}; r.readAsDataURL(f); }
 });
-
-function clearCoverChange() {
-  newCoverFile = null;
-  document.getElementById('cover-book-select').value = '';
-  document.getElementById('new-cover-preview-wrap').style.display = 'none';
-  document.getElementById('cover-current-placeholder').style.display = 'flex';
-  document.getElementById('cover-current-img').style.display = 'none';
+function clearCover() {
+  newCoverFile=null;
+  document.getElementById('cover-book-select').value='';
+  document.getElementById('new-cover-wrap').style.display='none';
+  document.getElementById('cover-ph').style.display='flex';
+  document.getElementById('cover-cur-img').style.display='none';
   setStatus('cover-status','','');
 }
-
-async function applyCoverChange() {
-  const id = document.getElementById('cover-book-select').value;
+function applyCover() {
+  const id=document.getElementById('cover-book-select').value;
   if (!id) { setStatus('cover-status','Please select a book first.','error'); return; }
-  if (!newCoverFile) { setStatus('cover-status','Please select a new cover image.','error'); return; }
-  const r = new FileReader();
-  r.onload = async ev => {
-    const b = books.find(x => x.id === id);
-    b.coverUrl = ev.target.result;
-    document.getElementById('cover-current-img').src = ev.target.result;
-    document.getElementById('cover-current-img').style.display = 'block';
-    document.getElementById('cover-current-placeholder').style.display = 'none';
-    await saveBookToDB(b);
-    setStatus('cover-status','✓ Cover updated and saved to your library.','success');
-    renderLibrary();
-    toast('Cover updated for "' + b.title + '"', 'success');
+  if (!newCoverFile) { setStatus('cover-status','Please select a cover image.','error'); return; }
+  const r=new FileReader();
+  r.onload=ev=>{
+    const b=books.find(x=>x.id===id); b.coverUrl=ev.target.result;
+    document.getElementById('cover-cur-img').src=ev.target.result;
+    document.getElementById('cover-cur-img').style.display='block';
+    document.getElementById('cover-ph').style.display='none';
+    saveMeta(); renderLibrary();
+    setStatus('cover-status','✓ Cover updated and saved.','success');
+    toast('Cover updated for "'+b.title+'"','success');
   };
   r.readAsDataURL(newCoverFile);
 }
 
-// ════════════════════════════════
-//  SEND TO KINDLE
-// ════════════════════════════════
+// ══ KINDLE ══
 function renderKindleList() {
-  const ke = localStorage.getItem('folio_kindle_email') || '';
-  const se = localStorage.getItem('folio_sender_email') || '';
-  document.getElementById('kindle-email-display').textContent = ke || 'not set';
-  document.getElementById('sender-email-display').textContent = se || 'not set';
-  const list = document.getElementById('kindle-list');
-  if (!books.length) { list.innerHTML = `<div class="empty-state" style="padding:2.5rem"><div class="empty-icon">📨</div><h3>No books yet</h3><p>Add books in the Library tab first.</p></div>`; return; }
-  list.innerHTML = books.map(b => `
+  const ke=localStorage.getItem('folio_kindle_email')||'', se=localStorage.getItem('folio_sender_email')||'';
+  document.getElementById('kindle-email-display').textContent=ke||'not set';
+  document.getElementById('sender-email-display').textContent=se||'not set';
+  const list=document.getElementById('kindle-list');
+  if (!books.length) { list.innerHTML=`<div class="empty-state" style="padding:2.5rem"><div class="empty-icon">📨</div><h3>No books yet</h3><p>Add books in the Library tab first.</p></div>`; return; }
+  list.innerHTML=books.map(b=>`
     <div class="kindle-item">
-      ${b.coverUrl ? `<img class="kindle-item-cover" src="${b.coverUrl}" style="width:40px;height:58px;border-radius:3px;object-fit:cover" />` : `<div class="kindle-item-cover">📖</div>`}
-      <div class="kindle-item-info"><div class="kindle-item-title">${esc(b.title)}</div><div class="kindle-item-meta">${esc(b.author)}${b.fileExt?' · '+b.fileExt.replace('.','').toUpperCase():''}</div></div>
-      <div class="kindle-item-check ${selectedForKindle.has(b.id)?'checked':''}" onclick="toggleKindleSelect('${b.id}')">${selectedForKindle.has(b.id)?'✓':''}</div>
+      ${b.coverUrl?`<img class="k-cover" src="${b.coverUrl}" style="width:40px;height:58px;border-radius:3px;object-fit:cover" />`:`<div class="k-cover">📖</div>`}
+      <div class="k-info">
+        <div class="k-title">${esc(b.title)}</div>
+        <div class="k-meta">${esc(b.author)}${b.fileExt?' · '+b.fileExt.replace('.','').toUpperCase():''}${!b.file?' · <span style="color:var(--rust)">no file</span>':''}</div>
+      </div>
+      <div class="k-check ${selectedForKindle.has(b.id)?'checked':''}" onclick="toggleK('${b.id}')">${selectedForKindle.has(b.id)?'✓':''}</div>
     </div>`).join('');
-  document.getElementById('selected-count').textContent = `${selectedForKindle.size} selected`;
+  document.getElementById('selected-count').textContent=`${selectedForKindle.size} selected`;
 }
-
-function toggleKindleSelect(id) { if (selectedForKindle.has(id)) selectedForKindle.delete(id); else selectedForKindle.add(id); renderKindleList(); }
-
+function toggleK(id) { if (selectedForKindle.has(id)) selectedForKindle.delete(id); else selectedForKindle.add(id); renderKindleList(); }
 function openKindleSettings() {
-  document.getElementById('kindle-email-input').value = localStorage.getItem('folio_kindle_email') || '';
-  document.getElementById('sender-email-input').value = localStorage.getItem('folio_sender_email') || '';
-  openModal('kindle-settings-modal');
+  document.getElementById('kindle-email-input').value=localStorage.getItem('folio_kindle_email')||'';
+  document.getElementById('sender-email-input').value=localStorage.getItem('folio_sender_email')||'';
+  openModal('kindle-modal');
 }
-
 function saveKindleSettings() {
-  const ke = document.getElementById('kindle-email-input').value.trim();
-  const se = document.getElementById('sender-email-input').value.trim();
-  if (ke) localStorage.setItem('folio_kindle_email', ke);
-  if (se) localStorage.setItem('folio_sender_email', se);
-  closeModal('kindle-settings-modal');
-  renderKindleList();
-  toast('Kindle settings saved', 'success');
+  const ke=document.getElementById('kindle-email-input').value.trim(), se=document.getElementById('sender-email-input').value.trim();
+  if(ke) localStorage.setItem('folio_kindle_email',ke);
+  if(se) localStorage.setItem('folio_sender_email',se);
+  closeModal('kindle-modal'); renderKindleList(); toast('Kindle settings saved','success');
+}
+function sendSelectedBooks() {
+  const ke=localStorage.getItem('folio_kindle_email')||'', se=localStorage.getItem('folio_sender_email')||'';
+  if (!ke||!se) { setStatus('kindle-status','Set up your Kindle and sender email in Settings first.','error'); return; }
+  if (!selectedForKindle.size) { setStatus('kindle-status','Select at least one book.','error'); return; }
+  const sel=books.filter(b=>selectedForKindle.has(b.id));
+  const subj=encodeURIComponent('Folio: '+sel.map(b=>b.title).join(' | '));
+  const body=encodeURIComponent('Sending from Folio:\n\n'+sel.map(b=>`• ${b.title} by ${b.author}`).join('\n'));
+  window.open(`mailto:${ke}?subject=${subj}&body=${body}`);
+  sel.forEach(b=>{ if(b.file) setTimeout(()=>downloadBook(b.id),400); });
+  setStatus('kindle-status','✓ Email opened. Attach the downloaded epub files and send.','success');
+  toast(`Email opened for ${sel.length} book${sel.length>1?'s':''}`, 'success');
 }
 
-async function sendSelectedBooks() {
-  const ke = localStorage.getItem('folio_kindle_email') || '';
-  const se = localStorage.getItem('folio_sender_email') || '';
-  if (!ke || !se) { setStatus('kindle-status','⚙ Set up your Kindle and sender email in Settings first.','error'); return; }
-  if (!selectedForKindle.size) { setStatus('kindle-status','Select at least one book to send.','error'); return; }
-  const selected = books.filter(b => selectedForKindle.has(b.id));
-  const subject = encodeURIComponent('Folio: ' + selected.map(b => b.title).join(' | '));
-  const body = encodeURIComponent('Sending from Folio:\n\n' + selected.map(b => `• ${b.title} by ${b.author}`).join('\n'));
-  window.open(`mailto:${ke}?subject=${subject}&body=${body}`);
-  // Download files for attaching
-  for (const b of selected) { await downloadBook(b.id); await new Promise(r => setTimeout(r, 500)); }
-  setStatus('kindle-status','✓ Opened your email client. Attach the downloaded epub files and send.','success');
-  toast(`Email opened for ${selected.length} book${selected.length>1?'s':''}`, 'success');
-}
-
-// ════════════════════════════════
-//  REPAIR — MODE TOGGLE
-// ════════════════════════════════
-let repairMode = 'api';
-let repairFile = null;
-let repairBookId = null;
-let repairMetaSuggested = null;
-let currentEpubInfo = null;
-
+// ══ REPAIR ══
 function setRepairMode(mode) {
-  repairMode = mode;
-  document.getElementById('mode-btn-api').classList.toggle('active', mode === 'api');
-  document.getElementById('mode-btn-free').classList.toggle('active', mode === 'free');
-  document.getElementById('api-key-bar').style.display = mode === 'api' ? 'flex' : 'none';
-  document.getElementById('free-mode-banner').style.display = mode === 'free' ? 'block' : 'none';
-  // Reset results
+  repairMode=mode;
+  document.getElementById('mode-btn-api').classList.toggle('active',mode==='api');
+  document.getElementById('mode-btn-free').classList.toggle('active',mode==='free');
+  document.getElementById('api-key-bar').style.display=mode==='api'?'flex':'none';
+  document.getElementById('free-mode-banner').style.display=mode==='free'?'block':'none';
   document.getElementById('repair-results').classList.remove('visible');
-  document.getElementById('free-mode-prompt-section').style.display = 'none';
-  const mp = document.getElementById('metadata-panel');
-  if (mp) mp.style.display = 'none';
+  document.getElementById('free-prompt-section').style.display='none';
+  document.getElementById('metadata-panel').style.display='none';
 }
-
 function saveRepairKey() {
-  const key = document.getElementById('repair-api-key').value.trim();
-  if (key) { sessionStorage.setItem('folio_api_key', key); toast('API key saved for this session', 'success'); }
+  const k=document.getElementById('repair-api-key').value.trim();
+  if(k) { localStorage.setItem('folio_api_key',k); toast('API key saved','success'); }
 }
-
 function populateRepairSelect() {
-  const sel = document.getElementById('repair-library-select');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">— or pick from your library —</option>';
-  books.forEach(b => { const o = document.createElement('option'); o.value = b.id; o.textContent = `${b.title} — ${b.author}`; sel.appendChild(o); });
-  const saved = sessionStorage.getItem('folio_api_key');
-  if (saved) { const ki = document.getElementById('repair-api-key'); if (ki) ki.value = saved; }
+  const sel=document.getElementById('repair-lib-select');
+  sel.innerHTML='<option value="">— or pick from your library —</option>';
+  books.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=`${b.title} — ${b.author}${b.file?'':' (no file)'}`;sel.appendChild(o);});
+  const k=localStorage.getItem('folio_api_key');
+  if(k) { const el=document.getElementById('repair-api-key'); if(el) el.value=k; }
 }
-
-async function loadRepairFromLibrary() {
-  const id = document.getElementById('repair-library-select').value;
-  if (!id) return;
-  const b = books.find(x => x.id === id);
-  if (!b) return;
-  repairBookId = b.id;
-  if (b.file) { repairFile = b.file; showRepairFileCard(b.file.name, b.file.size); return; }
-  if (b.storageKey) {
-    toast('Fetching epub from storage…', 'success');
-    const url = await getDownloadUrl(b.storageKey);
-    if (!url) return;
-    const resp = await fetch(url);
-    const blob = await resp.blob();
-    repairFile = new File([blob], b.title + b.fileExt, { type: 'application/epub+zip' });
-    showRepairFileCard(repairFile.name, repairFile.size);
-  }
+function loadRepairFromLibrary() {
+  const id=document.getElementById('repair-lib-select').value; if (!id) return;
+  const b=books.find(x=>x.id===id);
+  if (!b||!b.file) { toast('No file loaded for this book — re-upload it first','error'); return; }
+  repairFile=b.file; repairBookId=b.id;
+  showRepairCard(b.file.name, b.file.size);
 }
-
-function showRepairFileCard(name, size) {
-  document.getElementById('repair-file-card').style.display = 'flex';
-  document.getElementById('repair-file-name').textContent = name;
-  document.getElementById('repair-file-meta').textContent = (size/1024).toFixed(0) + ' KB · epub';
+function showRepairCard(name, size) {
+  document.getElementById('repair-file-card').style.display='flex';
+  document.getElementById('repair-file-name').textContent=name;
+  document.getElementById('repair-file-meta').textContent=(size/1024).toFixed(0)+' KB · epub';
   document.getElementById('repair-results').classList.remove('visible');
   document.getElementById('repair-thinking').classList.remove('visible');
-  document.getElementById('free-mode-prompt-section').style.display = 'none';
-  const mp = document.getElementById('metadata-panel'); if (mp) mp.style.display = 'none';
+  document.getElementById('free-prompt-section').style.display='none';
+  document.getElementById('metadata-panel').style.display='none';
 }
-
-// Drag & drop
-document.getElementById('repair-drop-zone').addEventListener('dragover', e => { e.preventDefault(); document.getElementById('repair-drop-zone').classList.add('dragover'); });
-document.getElementById('repair-drop-zone').addEventListener('dragleave', () => document.getElementById('repair-drop-zone').classList.remove('dragover'));
-document.getElementById('repair-drop-zone').addEventListener('drop', e => {
-  e.preventDefault(); document.getElementById('repair-drop-zone').classList.remove('dragover');
-  const f = e.dataTransfer.files[0]; if (f && f.name.endsWith('.epub')) { repairFile = f; repairBookId = null; showRepairFileCard(f.name, f.size); }
+const rdz=document.getElementById('repair-dz');
+rdz.addEventListener('dragover',e=>{e.preventDefault();rdz.classList.add('dragover');});
+rdz.addEventListener('dragleave',()=>rdz.classList.remove('dragover'));
+rdz.addEventListener('drop',e=>{
+  e.preventDefault();rdz.classList.remove('dragover');
+  const f=e.dataTransfer.files[0]; if(f&&f.name.endsWith('.epub')) { repairFile=f; repairBookId=null; showRepairCard(f.name,f.size); }
 });
-document.getElementById('repair-file-input').addEventListener('change', e => {
-  const f = e.target.files[0]; if (f) { repairFile = f; repairBookId = null; showRepairFileCard(f.name, f.size); }
+document.getElementById('repair-file-input').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(f) { repairFile=f; repairBookId=null; showRepairCard(f.name,f.size); }
 });
 
-async function runRepairAnalysis() {
-  if (!repairFile) { toast('No epub loaded', 'error'); return; }
+async function runRepair() {
+  if (!repairFile) { toast('No epub loaded','error'); return; }
   document.getElementById('repair-thinking').classList.add('visible');
   document.getElementById('repair-results').classList.remove('visible');
-  document.getElementById('free-mode-prompt-section').style.display = 'none';
-  const mp = document.getElementById('metadata-panel'); if (mp) mp.style.display = 'none';
-  const phases = ['Parsing epub structure…','Reading OPF manifest…','Checking nav & NCX…','Inspecting metadata…','Building analysis…'];
-  let pi = 0;
-  const phaseEl = document.getElementById('thinking-phase');
-  const phaseInterval = setInterval(() => { if (phaseEl && pi < phases.length) phaseEl.textContent = phases[pi++]; }, 800);
+  document.getElementById('free-prompt-section').style.display='none';
+  document.getElementById('metadata-panel').style.display='none';
+  const phases=['Parsing epub structure…','Reading OPF manifest…','Checking nav & NCX…','Inspecting metadata…','Building analysis…'];
+  let pi=0; const ph=document.getElementById('thinking-phase');
+  const iv=setInterval(()=>{ if(ph&&pi<phases.length) ph.textContent=phases[pi++]; },800);
   try {
-    const ab = await repairFile.arrayBuffer();
-    currentEpubInfo = await extractEpubInfo(ab, repairFile.name);
-    clearInterval(phaseInterval);
-    if (repairMode === 'free') {
+    const ab=await repairFile.arrayBuffer();
+    const info=await extractEpub(ab, repairFile.name);
+    clearInterval(iv);
+    if (repairMode==='free') {
       document.getElementById('repair-thinking').classList.remove('visible');
-      buildFreePrompt(currentEpubInfo);
+      showFreePrompt(info);
     } else {
-      const apiKey = document.getElementById('repair-api-key').value.trim() || sessionStorage.getItem('folio_api_key') || '';
-      if (!apiKey) { document.getElementById('repair-thinking').classList.remove('visible'); toast('Enter your Anthropic API key first', 'error'); return; }
-      if (phaseEl) phaseEl.textContent = 'Consulting Claude…';
-      const result = await callClaudeAPI(apiKey, currentEpubInfo);
+      const key=document.getElementById('repair-api-key').value.trim()||localStorage.getItem('folio_api_key')||'';
+      if (!key) { document.getElementById('repair-thinking').classList.remove('visible'); toast('Enter your Anthropic API key first','error'); return; }
+      if(ph) ph.textContent='Consulting Claude…';
+      const result=await callClaude(key, info);
       document.getElementById('repair-thinking').classList.remove('visible');
-      renderRepairResults(result);
+      renderResults(result);
     }
   } catch(err) {
-    clearInterval(phaseInterval);
+    clearInterval(iv);
     document.getElementById('repair-thinking').classList.remove('visible');
-    toast('Error: ' + err.message, 'error');
+    toast('Error: '+err.message,'error');
   }
 }
 
-// ════════════════════════════════
-//  EPUB PARSER
-// ════════════════════════════════
-async function extractEpubInfo(arrayBuffer, filename) {
+async function extractEpub(ab, filename) {
   if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  const info = { filename, files: [], opf: null, ncx: null, nav: null, spine: [], manifest: [], metadata: {} };
-  info.files = Object.keys(zip.files).filter(f => !zip.files[f].dir);
-  let opfPath = null;
-  const containerXml = await zip.file('META-INF/container.xml')?.async('text');
-  if (containerXml) { const m = containerXml.match(/full-path="([^"]+\.opf)"/i); if (m) opfPath = m[1]; }
-  if (!opfPath) opfPath = info.files.find(f => f.endsWith('.opf'));
+  const zip=await JSZip.loadAsync(ab);
+  const info={filename, files:[], opf:null, ncx:null, nav:null, spine:[], manifest:[], metadata:{}};
+  info.files=Object.keys(zip.files).filter(f=>!zip.files[f].dir);
+  let opfPath=null;
+  const cont=await zip.file('META-INF/container.xml')?.async('text');
+  if (cont) { const m=cont.match(/full-path="([^"]+\.opf)"/i); if(m) opfPath=m[1]; }
+  if (!opfPath) opfPath=info.files.find(f=>f.endsWith('.opf'));
   if (opfPath) {
-    const opfText = await zip.file(opfPath)?.async('text');
-    if (opfText) {
-      info.opf = opfText.slice(0, 8000);
-      const extract = tag => { const m = opfText.match(new RegExp(`<dc:${tag}[^>]*>([^<]+)<\/dc:${tag}>`, 'i')); return m ? m[1].trim() : ''; };
-      info.metadata = { title: extract('title'), creator: extract('creator'), language: extract('language'), publisher: extract('publisher'), date: extract('date'), description: extract('description'), identifier: extract('identifier') };
-      info.spine = [...opfText.matchAll(/idref="([^"]+)"/g)].map(m => m[1]);
-      info.manifest = [...opfText.matchAll(/href="([^"]+)"/g)].map(m => m[1]).slice(0, 40);
+    const opf=await zip.file(opfPath)?.async('text');
+    if (opf) {
+      info.opf=opf.slice(0,8000);
+      const ex=tag=>{ const m=opf.match(new RegExp(`<dc:${tag}[^>]*>([^<]+)<\/dc:${tag}>`,'i')); return m?m[1].trim():''; };
+      info.metadata={title:ex('title'),creator:ex('creator'),language:ex('language'),publisher:ex('publisher'),date:ex('date'),description:ex('description'),identifier:ex('identifier')};
+      info.spine=[...opf.matchAll(/idref="([^"]+)"/g)].map(m=>m[1]);
+      info.manifest=[...opf.matchAll(/href="([^"]+)"/g)].map(m=>m[1]).slice(0,40);
     }
   }
-  const ncxFile = info.files.find(f => f.endsWith('.ncx'));
-  if (ncxFile) { const t = await zip.file(ncxFile)?.async('text'); if (t) info.ncx = t.slice(0, 3000); }
-  const navFile = info.files.find(f => (f.includes('nav') && f.endsWith('.xhtml')) || f.endsWith('nav.html'));
-  if (navFile) { const t = await zip.file(navFile)?.async('text'); if (t) info.nav = t.slice(0, 2000); }
-  info.hasCover = info.files.some(f => /cover\.(jpg|jpeg|png|webp)/i.test(f) || f.includes('cover'));
-  info.fileCount = info.files.length;
-  info.hasImages = info.files.some(f => /\.(jpg|jpeg|png|gif|webp|svg)/i.test(f));
+  const ncxF=info.files.find(f=>f.endsWith('.ncx'));
+  if (ncxF) { const t=await zip.file(ncxF)?.async('text'); if(t) info.ncx=t.slice(0,3000); }
+  const navF=info.files.find(f=>(f.includes('nav')&&f.endsWith('.xhtml'))||f.endsWith('nav.html'));
+  if (navF) { const t=await zip.file(navF)?.async('text'); if(t) info.nav=t.slice(0,2000); }
+  info.hasCover=info.files.some(f=>/cover\.(jpg|jpeg|png|webp)/i.test(f)||f.includes('cover'));
+  info.fileCount=info.files.length;
   return info;
 }
 
-function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function loadScript(src) { return new Promise((r,j)=>{ const s=document.createElement('script'); s.src=src; s.onload=r; s.onerror=j; document.head.appendChild(s); }); }
 
-function buildRepairPrompt(info) {
-  return `You are an epub quality analyst. Analyse this epub's structure and return ONLY a JSON object — no markdown fences, no preamble.
+function buildPrompt(info) {
+  return `You are an epub quality analyst. Analyse this epub's structure and return ONLY a JSON object — no markdown, no preamble.
 
-EPUB: ${info.filename} | FILES: ${info.fileCount} | COVER: ${info.hasCover} | SPINE ITEMS: ${info.spine.length}
+EPUB: ${info.filename} | FILES: ${info.fileCount} | COVER: ${info.hasCover} | SPINE: ${info.spine.length} items
 METADATA: ${JSON.stringify(info.metadata)}
 OPF (first 3500 chars): ${(info.opf||'NOT FOUND').slice(0,3500)}
 NCX: ${(info.ncx||'NOT FOUND').slice(0,1500)}
 NAV: ${(info.nav||'NOT FOUND').slice(0,1000)}
-MANIFEST SAMPLE: ${info.manifest.slice(0,20).join(', ')}
+MANIFEST: ${info.manifest.slice(0,20).join(', ')}
 
-Return exactly this JSON structure:
-{
-  "score": <0-100>,
-  "scoreLabel": "<Excellent|Good|Needs Work|Poor>",
-  "scoreSummary": "<one sentence>",
-  "issues": [{"severity":"<critical|warning|info>","title":"<short>","detail":"<explanation>"}],
-  "goodThings": [{"title":"<what looks good>","detail":"<brief>"}],
-  "recommendations": [{"title":"<action>","detail":"<how to fix>"}],
-  "suggestedMetadata": {"title":"","author":"","language":"","publisher":"","publishDate":"","description":"","series":"","seriesIndex":""}
-}`;
+Return exactly:
+{"score":<0-100>,"scoreLabel":"<Excellent|Good|Needs Work|Poor>","scoreSummary":"<one sentence>","issues":[{"severity":"<critical|warning|info>","title":"","detail":""}],"goodThings":[{"title":"","detail":""}],"recommendations":[{"title":"","detail":""}],"suggestedMetadata":{"title":"","author":"","language":"","publisher":"","publishDate":"","description":"","series":"","seriesIndex":""}}`;
 }
 
-// ════════════════════════════════
-//  FREE MODE — build prompt + open claude.ai
-// ════════════════════════════════
-function buildFreePrompt(info) {
-  const prompt = buildRepairPrompt(info);
-  document.getElementById('claude-prompt-box').textContent = prompt;
-  const encoded = encodeURIComponent(prompt);
-  const claudeUrl = `https://claude.ai/new?q=${encoded.slice(0, 4000)}`; // claude.ai has URL length limits
-  document.getElementById('free-claude-link').href = claudeUrl;
-  document.getElementById('free-mode-prompt-section').style.display = 'block';
-  toast('Prompt ready — copy it and paste into Claude.ai', 'success');
+function showFreePrompt(info) {
+  const p=buildPrompt(info);
+  document.getElementById('prompt-box').textContent=p;
+  document.getElementById('free-claude-link').href=`https://claude.ai/new?q=${encodeURIComponent(p).slice(0,4000)}`;
+  document.getElementById('free-prompt-section').style.display='block';
+  toast('Prompt ready — copy it into Claude.ai','success');
 }
-
 function copyPrompt() {
-  const text = document.getElementById('claude-prompt-box').textContent;
-  navigator.clipboard.writeText(text).then(() => toast('Prompt copied to clipboard!', 'success')).catch(() => toast('Select and copy the text manually', 'error'));
+  navigator.clipboard.writeText(document.getElementById('prompt-box').textContent)
+    .then(()=>toast('Prompt copied!','success'))
+    .catch(()=>toast('Select and copy the text manually','error'));
 }
-
 function parseFreeResponse() {
-  const raw = document.getElementById('claude-paste-area').value.trim();
-  if (!raw) { setStatus('free-parse-status', 'Paste Claude\'s response first.', 'error'); return; }
+  const raw=document.getElementById('paste-area').value.trim();
+  if (!raw) { setStatus('free-parse-status',"Paste Claude's response first.",'error'); return; }
   try {
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const result = JSON.parse(clean);
-    document.getElementById('free-mode-prompt-section').style.display = 'none';
-    renderRepairResults(result);
-    setStatus('free-parse-status', '', '');
-  } catch(e) {
-    setStatus('free-parse-status', 'Could not parse — make sure you pasted the full JSON response from Claude.', 'error');
-  }
+    const result=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    document.getElementById('free-prompt-section').style.display='none';
+    renderResults(result);
+  } catch { setStatus('free-parse-status','Could not parse — paste the full JSON response.','error'); }
 }
 
-// ════════════════════════════════
-//  API MODE
-// ════════════════════════════════
-async function callClaudeAPI(apiKey, info) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1800, messages: [{ role: 'user', content: buildRepairPrompt(info) }] })
+async function callClaude(key, info) {
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,messages:[{role:'user',content:buildPrompt(info)}]})
   });
-  if (!response.ok) { const e = await response.json(); throw new Error(e.error?.message || 'API error ' + response.status); }
-  const data = await response.json();
-  const raw = data.content.map(c => c.text || '').join('');
-  const clean = raw.replace(/```json|```/g, '').trim();
-  return JSON.parse(clean);
+  if (!r.ok) { const e=await r.json(); throw new Error(e.error?.message||'API error '+r.status); }
+  const d=await r.json();
+  return JSON.parse(d.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
 }
 
-// ════════════════════════════════
-//  REPAIR RESULTS RENDERER
-// ════════════════════════════════
-function renderRepairResults(result) {
+function renderResults(res) {
   document.getElementById('repair-results').classList.add('visible');
-  const score = result.score || 0;
-  const circle = document.getElementById('score-circle');
-  circle.textContent = score;
-  circle.className = 'score-circle ' + (score >= 80 ? 'good' : score >= 50 ? 'ok' : 'poor');
-  document.getElementById('score-title').textContent = result.scoreLabel || 'Health Score';
-  document.getElementById('score-label').textContent = result.scoreSummary || '';
-  const renderList = (elId, items, type) => {
-    const el = document.getElementById(elId);
-    el.innerHTML = (items && items.length)
-      ? items.map(i => `<li class="issue-item ${i.severity || type}"><span class="issue-badge">${i.severity || type}</span><div><strong>${esc(i.title)}</strong> — ${esc(i.detail)}</div></li>`).join('')
-      : `<li class="issue-item info"><span class="issue-badge">—</span><div>Nothing to report</div></li>`;
+  const sc=res.score||0, c=document.getElementById('score-circle');
+  c.textContent=sc; c.className='score-circle '+(sc>=80?'good':sc>=50?'ok':'poor');
+  document.getElementById('score-title').textContent=res.scoreLabel||'Health Score';
+  document.getElementById('score-label').textContent=res.scoreSummary||'';
+  const rl=(id,items,type)=>{
+    document.getElementById(id).innerHTML=(items&&items.length)
+      ?items.map(i=>`<li class="issue-item ${i.severity||type}"><span class="issue-badge">${i.severity||type}</span><div><strong>${esc(i.title)}</strong> — ${esc(i.detail)}</div></li>`).join('')
+      :`<li class="issue-item info"><span class="issue-badge">—</span><div>Nothing to report</div></li>`;
   };
-  renderList('issues-list', result.issues, 'info');
-  renderList('good-list', (result.goodThings||[]).map(g => ({...g, severity:'fixed'})), 'fixed');
-  renderList('recs-list', (result.recommendations||[]).map(r => ({...r, severity:'info'})), 'info');
-  repairMetaSuggested = result.suggestedMetadata || {};
-  renderMetadataEditor(repairMetaSuggested);
-  document.getElementById('metadata-panel').style.display = 'block';
-  toast('Analysis complete!', 'success');
+  rl('issues-list',res.issues,'info');
+  rl('good-list',(res.goodThings||[]).map(g=>({...g,severity:'fixed'})),'fixed');
+  rl('recs-list',(res.recommendations||[]).map(r=>({...r,severity:'info'})),'info');
+  repairMetaSug=res.suggestedMetadata||{};
+  renderMetaEditor(repairMetaSug);
+  document.getElementById('metadata-panel').style.display='block';
+  toast('Analysis complete!','success');
 }
-
-function renderMetadataEditor(meta) {
-  const fields = [['title','Title'],['author','Author'],['language','Language'],['publisher','Publisher'],['publishDate','Publish Date'],['series','Series'],['seriesIndex','Series #'],['description','Description']];
-  document.getElementById('metadata-grid').innerHTML = fields.map(([k,l]) => `<span class="meta-key">${l}</span><input class="meta-val editable" id="meta-field-${k}" value="${esc(meta[k]||'')}" />`).join('');
+function renderMetaEditor(m) {
+  const fields=[['title','Title'],['author','Author'],['language','Language'],['publisher','Publisher'],['publishDate','Publish Date'],['series','Series'],['seriesIndex','Series #'],['description','Description']];
+  document.getElementById('meta-grid').innerHTML=fields.map(([k,l])=>`<span class="meta-key">${l}</span><input class="meta-editable" id="mf-${k}" value="${esc(m[k]||'')}" />`).join('');
 }
-
-function resetMetadata() { if (repairMetaSuggested) renderMetadataEditor(repairMetaSuggested); }
-
-async function applyMetadataToLibrary() {
-  const get = id => document.getElementById(id)?.value.trim() || '';
-  const titleVal = get('meta-field-title');
-  const authorVal = get('meta-field-author');
-  const seriesVal = get('meta-field-series');
+function resetMeta() { if(repairMetaSug) renderMetaEditor(repairMetaSug); }
+function applyMeta() {
+  const g=id=>document.getElementById(id)?.value.trim()||'';
+  const t=g('mf-title'), a=g('mf-author'), s=g('mf-series');
   if (repairBookId) {
-    const b = books.find(x => x.id === repairBookId);
+    const b=books.find(x=>x.id===repairBookId);
     if (b) {
-      if (titleVal) b.title = titleVal;
-      if (authorVal) b.author = authorVal;
-      if (seriesVal) b.tag = seriesVal;
-      await saveBookToDB(b);
-      renderLibrary();
-      setStatus('metadata-apply-status', '✓ Applied to "' + b.title + '" in your library.', 'success');
-      toast('Metadata applied', 'success'); return;
+      if(t) b.title=t; if(a) b.author=a; if(s) b.tag=s;
+      saveMeta(); renderLibrary();
+      setStatus('meta-apply-status','✓ Applied to "'+b.title+'" in your library.','success');
+      toast('Metadata applied','success'); return;
     }
   }
-  if (titleVal && repairFile) {
-    const id = genId();
-    const storageKey = await uploadFileToStorage(repairFile, id);
-    const newBook = { id, title: titleVal, author: authorVal || 'Unknown Author', tag: seriesVal || '', added: Date.now(), file: repairFile, fileExt: '.epub', coverUrl: null, storageKey };
-    books.unshift(newBook);
-    repairBookId = id;
-    await saveBookToDB(newBook);
-    renderLibrary();
-    setStatus('metadata-apply-status', '✓ Added to your library with clean metadata.', 'success');
-    toast('Added to library', 'success');
+  if (t&&repairFile) {
+    const id=genId();
+    const nb={id,title:t,author:a||'Unknown Author',tag:s||'',added:Date.now(),file:repairFile,fileExt:'.epub',coverUrl:null};
+    books.unshift(nb); repairBookId=id;
+    ssSave(id,repairFile); saveMeta(); renderLibrary(); updateBanner();
+    setStatus('meta-apply-status','✓ Added to your library with clean metadata.','success');
+    toast('Added to library','success');
   } else {
-    setStatus('metadata-apply-status', 'Please fill in at least the title.', 'error');
+    setStatus('meta-apply-status','Please fill in at least the title.','error');
   }
 }
 
-// ════════════════════════════════
-//  MODAL HELPERS
-// ════════════════════════════════
+// ══ MODALS ══
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-backdrop').forEach(b => b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); }));
+document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{ if(e.target===b) b.classList.remove('open'); }));
 
-// ════════════════════════════════
-//  STATUS & TOAST
-// ════════════════════════════════
-function setStatus(elId, msg, type) {
-  const el = document.getElementById(elId); if (!el) return;
-  el.textContent = msg; el.className = 'status-msg' + (type ? ' ' + type : '');
-  if (!type) el.style.display = 'none';
+// ══ HELPERS ══
+function setStatus(id, msg, type) {
+  const el=document.getElementById(id); if(!el) return;
+  el.textContent=msg; el.className='status-msg'+(type?' '+type:'');
+  if(!type) el.style.display='none';
 }
-
 function toast(msg, type='success') {
-  const c = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = `toast toast-${type}`; t.textContent = msg; c.appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg; c.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); },3000);
 }
 
-// ════════════════════════════════
-//  INIT
-// ════════════════════════════════
 boot();
 </script>
-
-<!-- ══════════════════════════════════
-     SUPABASE SETUP INSTRUCTIONS
-     (shown as comment for reference)
-
-To set up your Supabase project, run this SQL in the Supabase SQL Editor:
-
--- 1. Create books table
-create table books (
-  id uuid primary key,
-  user_id uuid references auth.users(id) on delete cascade not null,
-  title text not null,
-  author text,
-  tag text,
-  cover_url text,
-  storage_key text,
-  file_ext text default '.epub',
-  created_at timestamptz default now()
-);
-
--- 2. Enable Row Level Security
-alter table books enable row level security;
-
--- 3. RLS Policy: users can only see/edit their own books
-create policy "Users manage own books"
-  on books for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
--- 4. Create storage bucket for epub files
-insert into storage.buckets (id, name, public) values ('epub-files', 'epub-files', false);
-
--- 5. Storage RLS: users can only access their own files
-create policy "Users manage own files"
-  on storage.objects for all
-  using (bucket_id = 'epub-files' and auth.uid()::text = (storage.foldername(name))[1])
-  with check (bucket_id = 'epub-files' and auth.uid()::text = (storage.foldername(name))[1]);
-
-══════════════════════════════════ -->
 </body>
 </html>
