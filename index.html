@@ -18,7 +18,6 @@
     html, body { height:100%; background:var(--cream); color:var(--ink); font-family:'Lora',Georgia,serif; font-size:16px; line-height:1.6; }
     body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; }
 
-    /* HEADER */
     header { background:var(--brown-dark); padding:0 1rem; display:flex; align-items:center; justify-content:space-between; height:52px; box-shadow:0 2px 12px var(--shadow-md); position:sticky; top:0; z-index:100; gap:0.5rem; }
     .logo { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; font-style:italic; color:var(--parchment); letter-spacing:0.02em; display:flex; align-items:center; gap:0.4rem; flex-shrink:0; }
     .logo-mark { width:24px; height:24px; background:var(--rust); border-radius:2px 7px 2px 7px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; color:var(--cream); flex-shrink:0; }
@@ -28,54 +27,34 @@
     .nav-btn.active { background:var(--rust); color:var(--cream); }
     .header-count { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--brown-mid); white-space:nowrap; flex-shrink:0; }
 
-    /* MOBILE BOTTOM TAB BAR */
-    .mobile-nav {
-      display:none; position:fixed; bottom:0; left:0; right:0; z-index:200;
-      background:var(--brown-dark); border-top:1px solid rgba(255,255,255,0.1);
-      box-shadow:0 -2px 16px var(--shadow-md); height:58px;
-    }
-    .mobile-nav-btn {
-      flex:1; background:none; border:none; color:var(--warm-tan);
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      gap:2px; cursor:pointer; padding:0.3rem 0.2rem;
-      font-family:'Lora',serif; font-size:0.58rem; line-height:1.2;
-      transition:color 0.15s; -webkit-tap-highlight-color:transparent;
-    }
+    .mobile-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:200; background:var(--brown-dark); border-top:1px solid rgba(255,255,255,0.1); box-shadow:0 -2px 16px var(--shadow-md); height:58px; }
+    .mobile-nav-btn { flex:1; background:none; border:none; color:var(--warm-tan); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; padding:0.3rem 0.2rem; font-family:'Lora',serif; font-size:0.58rem; line-height:1.2; transition:color 0.15s; -webkit-tap-highlight-color:transparent; }
     .mobile-nav-btn .mn-icon { font-size:1.2rem; line-height:1; }
     .mobile-nav-btn.active { color:var(--cream); }
     .mobile-nav-btn.active .mn-icon { filter:drop-shadow(0 0 3px rgba(212,98,58,0.8)); }
 
     @media(max-width:600px) {
-      header nav { display:none; }
-      .header-count { display:none; }
-      .mobile-nav { display:flex; }
-      main { padding-bottom:70px !important; }
-      .logo { font-size:1.2rem; }
+      header nav { display:none; } .header-count { display:none; }
+      .mobile-nav { display:flex; } main { padding-bottom:70px !important; } .logo { font-size:1.2rem; }
     }
     @media(min-width:601px) {
-      header { padding:0 2rem; height:64px; }
-      .logo { font-size:1.6rem; gap:0.5rem; }
-      .logo-mark { width:28px; height:28px; font-size:0.9rem; }
-      .nav-btn { font-size:0.875rem; padding:0.5rem 1rem; }
+      header { padding:0 2rem; height:64px; } .logo { font-size:1.6rem; gap:0.5rem; }
+      .logo-mark { width:28px; height:28px; font-size:0.9rem; } .nav-btn { font-size:0.875rem; padding:0.5rem 1rem; }
     }
 
-    /* MAIN */
     main { max-width:1200px; margin:0 auto; padding:1.25rem 0.9rem 3rem; }
     @media(min-width:601px) { main { padding:2rem 1.5rem 4rem; } }
-    .page { display:none; }
-    .page.active { display:block; }
+    .page { display:none; } .page.active { display:block; }
     .page-header { margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px solid var(--warm-tan); display:flex; align-items:flex-start; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; }
     @media(min-width:601px) { .page-header { margin-bottom:2rem; align-items:flex-end; } }
     .page-title { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:600; color:var(--brown-dark); line-height:1.2; }
     @media(min-width:601px) { .page-title { font-size:2rem; } }
     .page-subtitle { font-size:0.82rem; color:var(--brown-mid); font-style:italic; margin-top:0.2rem; }
 
-    /* SESSION BANNER */
     .session-banner { background:var(--parchment); border:1.5px solid var(--warm-tan); border-radius:8px; padding:0.6rem 0.9rem; margin-bottom:1.25rem; display:none; align-items:flex-start; gap:0.6rem; font-size:0.8rem; color:var(--brown-mid); line-height:1.5; }
     .s-dot { width:8px; height:8px; border-radius:50%; background:var(--sage); flex-shrink:0; margin-top:0.4rem; }
     .s-dot.warn { background:#d4a820; }
 
-    /* BUTTONS */
     .btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.55rem 1.1rem; border-radius:6px; border:none; font-family:'Lora',serif; font-size:0.875rem; cursor:pointer; transition:all 0.2s; text-decoration:none; -webkit-tap-highlight-color:transparent; }
     .btn-primary { background:var(--rust); color:var(--cream); }
     .btn-primary:hover { background:var(--rust-light); }
@@ -87,29 +66,26 @@
     .btn-danger { background:transparent; color:#b04a1f; border:1.5px solid #d4a090; }
     .btn-danger:hover { background:#fdf0ec; }
     .btn-sm { padding:0.35rem 0.75rem; font-size:0.8rem; }
+    .btn-kindle { background:#232f3e; color:#ff9900; border:none; font-weight:500; }
+    .btn-kindle:hover { background:#37475a; }
+    @media(min-width:601px) { .btn-kindle:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(35,47,62,0.4); } }
     .btn-claude { background:#7c5cbf; color:#fff; }
     .btn-claude:hover { background:#9370db; }
-    @media(min-width:601px) { .btn-claude:hover { transform:translateY(-1px); } }
 
-    /* UPLOAD ZONE */
     .upload-zone { border:2px dashed var(--warm-tan); border-radius:12px; background:var(--parchment); padding:2rem 1.25rem; text-align:center; cursor:pointer; transition:all 0.25s; margin-bottom:1.5rem; }
     @media(min-width:601px) { .upload-zone { padding:3rem 2rem; margin-bottom:2rem; } }
     .upload-zone:hover, .upload-zone.dragover { border-color:var(--rust); background:#f5ede0; }
-    @media(min-width:601px) { .upload-zone:hover, .upload-zone.dragover { transform:scale(1.005); } }
     .upload-icon { font-size:2rem; margin-bottom:0.6rem; display:block; }
-    @media(min-width:601px) { .upload-icon { font-size:2.5rem; } }
     .upload-zone h3 { font-family:'Playfair Display',serif; font-size:1rem; color:var(--brown-dark); margin-bottom:0.3rem; }
     .upload-zone p { font-size:0.82rem; color:var(--brown-mid); }
     #file-input-lib { display:none; }
 
-    /* TOOLBAR */
     .toolbar { display:flex; gap:0.6rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; }
     .search-input { flex:1; min-width:140px; padding:0.5rem 0.85rem; border:1.5px solid var(--warm-tan); border-radius:6px; background:var(--parchment); font-family:'Lora',serif; font-size:0.875rem; color:var(--ink); outline:none; transition:border-color 0.2s; }
     .search-input:focus { border-color:var(--rust); }
     .search-input::placeholder { color:var(--brown-mid); }
     select.filter-select { padding:0.5rem 0.6rem; border:1.5px solid var(--warm-tan); border-radius:6px; background:var(--parchment); font-family:'Lora',serif; font-size:0.82rem; color:var(--ink); cursor:pointer; outline:none; flex-shrink:0; }
 
-    /* BOOK GRID */
     .book-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:1rem; }
     @media(min-width:480px) { .book-grid { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:1.25rem; } }
     @media(min-width:769px) { .book-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1.5rem; } }
@@ -124,26 +100,21 @@
     .book-author { font-size:0.7rem; color:var(--brown-mid); font-style:italic; margin-top:0.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .book-tag { display:inline-block; background:var(--warm-tan); color:var(--brown-dark); font-size:0.62rem; padding:0.1rem 0.35rem; border-radius:3px; margin-top:0.25rem; font-family:'JetBrains Mono',monospace; }
     .no-file-badge { display:inline-block; background:#fdf0ec; color:var(--rust); font-size:0.6rem; padding:0.1rem 0.35rem; border-radius:3px; margin-top:0.25rem; font-family:'JetBrains Mono',monospace; border:1px solid #e8b4a0; }
-    /* Book actions: always visible on touch, hover-only on pointer */
     .book-actions { position:absolute; top:0.35rem; right:0.35rem; display:flex; flex-direction:column; gap:0.25rem; opacity:0; transition:opacity 0.2s; }
-    @media(hover:none) { .book-actions { opacity:1; } } /* always show on touch */
+    @media(hover:none) { .book-actions { opacity:1; } }
     .book-card:hover .book-actions { opacity:1; }
     .action-pill { background:rgba(43,29,14,0.78); color:var(--cream); border:none; border-radius:4px; font-size:0.62rem; padding:0.22rem 0.4rem; cursor:pointer; backdrop-filter:blur(4px); font-family:'Lora',serif; transition:background 0.15s; -webkit-tap-highlight-color:transparent; }
     .action-pill:hover { background:var(--rust); }
 
-    /* EMPTY */
     .empty-state { text-align:center; padding:3rem 1.5rem; color:var(--brown-mid); }
     .empty-state .empty-icon { font-size:2.5rem; margin-bottom:0.75rem; opacity:0.5; }
     .empty-state h3 { font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:0.5rem; color:var(--brown-dark); }
 
-    /* MODAL */
     .modal-backdrop { position:fixed; inset:0; background:rgba(43,29,14,0.55); z-index:300; display:none; align-items:flex-end; justify-content:center; padding:0; backdrop-filter:blur(3px); }
     @media(min-width:601px) { .modal-backdrop { align-items:center; padding:1rem; } }
     .modal-backdrop.open { display:flex; }
     .modal { background:var(--cream); border-radius:16px 16px 0 0; padding:1.5rem 1.25rem 2rem; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 -8px 40px rgba(43,29,14,0.35); animation:modal-up 0.28s ease; }
-    @media(min-width:601px) {
-      .modal { border-radius:12px; padding:2rem; max-width:480px; max-height:none; animation:modal-in 0.25s ease; }
-    }
+    @media(min-width:601px) { .modal { border-radius:12px; padding:2rem; max-width:480px; max-height:none; animation:modal-in 0.25s ease; } }
     @keyframes modal-up { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:none; } }
     @keyframes modal-in { from { opacity:0; transform:translateY(12px) scale(0.97); } to { opacity:1; transform:none; } }
     .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
@@ -155,7 +126,6 @@
     .form-input:focus { border-color:var(--rust); }
     .form-actions { display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.5rem; }
 
-    /* PANEL / COVERS */
     .two-col { display:grid; grid-template-columns:1fr; gap:1.25rem; }
     @media(min-width:640px) { .two-col { grid-template-columns:1fr 1fr; gap:2rem; } }
     .panel { background:var(--parchment); border-radius:10px; padding:1.1rem 1.25rem; box-shadow:0 2px 8px var(--shadow); }
@@ -174,19 +144,36 @@
     /* KINDLE */
     .kindle-layout { display:grid; grid-template-columns:1fr; gap:1.5rem; }
     @media(min-width:800px) { .kindle-layout { grid-template-columns:1fr 320px; gap:2rem; } }
+    .kindle-hero { background:linear-gradient(135deg,#232f3e 0%,#37475a 100%); border-radius:12px; padding:1.75rem 1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; }
+    .kindle-hero-logo { font-size:2.5rem; flex-shrink:0; }
+    .kindle-hero-text { flex:1; min-width:0; }
+    .kindle-hero-text h2 { font-family:'Playfair Display',serif; font-size:1.1rem; color:#ff9900; margin-bottom:0.25rem; }
+    .kindle-hero-text p { font-size:0.82rem; color:rgba(255,255,255,0.72); line-height:1.55; }
+    .kindle-hero-btn { background:#ff9900; color:#0f1111; font-family:'Lora',serif; font-size:0.9rem; font-weight:500; padding:0.65rem 1.4rem; border-radius:8px; border:none; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; white-space:nowrap; transition:all 0.2s; flex-shrink:0; -webkit-tap-highlight-color:transparent; }
+    .kindle-hero-btn:hover { background:#ffac29; }
+    @media(min-width:601px) { .kindle-hero-btn:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(255,153,0,0.35); } }
     .kindle-send-list { display:flex; flex-direction:column; gap:0.65rem; }
-    .kindle-item { background:var(--parchment); border-radius:8px; padding:0.85rem 1rem; display:flex; align-items:center; gap:0.85rem; box-shadow:0 1px 4px var(--shadow); transition:box-shadow 0.2s; }
-    @media(min-width:601px) { .kindle-item:hover { box-shadow:0 4px 12px var(--shadow); } }
+    .kindle-item { background:var(--parchment); border-radius:8px; padding:0.85rem 1rem; display:flex; align-items:center; gap:0.85rem; box-shadow:0 1px 4px var(--shadow); transition:all 0.2s; cursor:pointer; border:1.5px solid transparent; user-select:none; }
+    .kindle-item:hover { border-color:var(--warm-tan); }
+    .kindle-item.selected { background:#fff8ec; border-color:#e69900; box-shadow:0 2px 8px rgba(255,153,0,0.15); }
+    .kindle-item.no-file-item { opacity:0.6; cursor:default; }
     .k-cover { width:38px; height:54px; border-radius:3px; object-fit:cover; flex-shrink:0; background:linear-gradient(145deg,var(--warm-tan),var(--brown-mid)); display:flex; align-items:center; justify-content:center; color:var(--cream); font-size:1rem; }
     .k-info { flex:1; min-width:0; }
     .k-title { font-family:'Playfair Display',serif; font-size:0.88rem; color:var(--brown-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .k-meta { font-size:0.73rem; color:var(--brown-mid); font-style:italic; margin-top:0.1rem; }
-    .k-check { width:20px; height:20px; border:1.5px solid var(--warm-tan); border-radius:4px; cursor:pointer; flex-shrink:0; background:var(--cream); display:flex; align-items:center; justify-content:center; font-size:0.7rem; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
-    .k-check.checked { background:var(--rust); border-color:var(--rust); color:var(--cream); }
+    .k-check { width:22px; height:22px; border:1.5px solid var(--warm-tan); border-radius:5px; flex-shrink:0; background:var(--cream); display:flex; align-items:center; justify-content:center; font-size:0.75rem; transition:all 0.15s; }
+    .kindle-item.selected .k-check { background:#ff9900; border-color:#e69900; color:#fff; }
+    .k-no-file-pill { font-size:0.62rem; font-family:'JetBrains Mono',monospace; background:#fdf0ec; color:var(--rust); border:1px solid #e8b4a0; border-radius:3px; padding:0.1rem 0.35rem; }
+    .kindle-toolbar { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; flex-wrap:wrap; }
+    .sel-badge { background:var(--rust); color:var(--cream); border-radius:4px; padding:0.1rem 0.5rem; font-size:0.75rem; font-family:'JetBrains Mono',monospace; }
+    .sel-badge.orange { background:#ff9900; color:#0f1111; }
     .kindle-sidebar .panel { position:static; }
     @media(min-width:800px) { .kindle-sidebar .panel { position:sticky; top:80px; } }
-    .k-email { background:var(--cream); border:1.5px solid var(--warm-tan); border-radius:6px; padding:0.5rem 0.7rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--brown-dark); word-break:break-all; }
-    .sel-badge { background:var(--rust); color:var(--cream); border-radius:4px; padding:0.1rem 0.4rem; font-size:0.75rem; font-family:'JetBrains Mono',monospace; margin-left:auto; }
+    .dl-progress { background:var(--parchment); border:1.5px solid var(--warm-tan); border-radius:8px; padding:0.85rem 1rem; display:none; margin-top:0.75rem; }
+    .dl-progress.visible { display:block; }
+    .dl-bar-wrap { height:6px; background:var(--warm-tan); border-radius:3px; overflow:hidden; margin:0.5rem 0; }
+    .dl-bar { height:100%; background:#ff9900; border-radius:3px; transition:width 0.3s; }
+    .dl-label { font-size:0.78rem; color:var(--brown-mid); font-family:'JetBrains Mono',monospace; }
 
     /* REPAIR */
     .repair-layout { display:grid; grid-template-columns:1fr; gap:1.5rem; }
@@ -206,8 +193,7 @@
     .file-card-name { font-family:'Playfair Display',serif; font-size:0.88rem; color:var(--brown-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
     .file-card-meta { font-size:0.73rem; color:var(--brown-mid); font-style:italic; white-space:nowrap; }
     .file-card .btn { flex-shrink:0; }
-    .repair-results { display:none; }
-    .repair-results.visible { display:block; }
+    .repair-results { display:none; } .repair-results.visible { display:block; }
     .r-section { margin-bottom:1.1rem; }
     .r-section-title { font-family:'Playfair Display',serif; font-size:0.92rem; font-weight:600; color:var(--brown-dark); margin-bottom:0.55rem; }
     .issue-list { list-style:none; display:flex; flex-direction:column; gap:0.35rem; }
@@ -233,19 +219,17 @@
     .thinking-wrap { display:none; flex-direction:column; align-items:center; padding:2rem; text-align:center; gap:1rem; }
     .thinking-wrap.visible { display:flex; }
     .thinking-dots span { display:inline-block; width:8px; height:8px; background:var(--rust); border-radius:50%; margin:0 3px; animation:db 1.2s infinite ease-in-out; }
-    .thinking-dots span:nth-child(2) { animation-delay:0.2s; }
-    .thinking-dots span:nth-child(3) { animation-delay:0.4s; }
+    .thinking-dots span:nth-child(2) { animation-delay:0.2s; } .thinking-dots span:nth-child(3) { animation-delay:0.4s; }
     @keyframes db { 0%,80%,100% { transform:translateY(0); opacity:0.4; } 40% { transform:translateY(-8px); opacity:1; } }
     .thinking-label { font-family:'Playfair Display',serif; font-style:italic; color:var(--brown-mid); font-size:0.9rem; }
     .thinking-phase { font-size:0.75rem; color:var(--brown-mid); font-family:'JetBrains Mono',monospace; }
 
-    /* STATUS / TOAST */
     .status-msg { padding:0.7rem 0.9rem; border-radius:6px; font-size:0.83rem; margin-top:0.85rem; display:none; line-height:1.5; }
     .status-msg.success { background:#eef4eb; color:#3a5c2e; border:1px solid #b8d4ae; display:block; }
     .status-msg.error   { background:#fdf0ec; color:#8a2c0e; border:1px solid #e8b4a0; display:block; }
     .status-msg.info    { background:#f0ebe0; color:var(--brown-dark); border:1px solid var(--warm-tan); display:block; }
     .toast-container { position:fixed; bottom:1rem; right:1rem; z-index:9000; display:flex; flex-direction:column; gap:0.4rem; max-width:calc(100vw - 2rem); }
-    @media(max-width:600px) { .toast-container { bottom:70px; } } /* above tab bar */
+    @media(max-width:600px) { .toast-container { bottom:70px; } }
     .toast { background:var(--brown-dark); color:var(--cream); padding:0.7rem 1rem; border-radius:8px; font-size:0.83rem; font-family:'Lora',serif; box-shadow:0 4px 16px var(--shadow-md); animation:ti 0.3s ease; max-width:300px; }
     .toast.toast-success { border-left:3px solid var(--sage); }
     .toast.toast-error   { border-left:3px solid var(--rust); }
@@ -270,7 +254,7 @@
 
 <main>
 
-<!-- ══ LIBRARY ══ -->
+<!-- LIBRARY -->
 <div class="page active" id="page-library">
   <div class="page-header">
     <div><h1 class="page-title">Your Library</h1><p class="page-subtitle">All your epubs, organised just the way you like</p></div>
@@ -297,7 +281,7 @@
   <div class="book-grid" id="book-grid"></div>
 </div>
 
-<!-- ══ COVERS ══ -->
+<!-- COVERS -->
 <div class="page" id="page-covers">
   <div class="page-header">
     <div><h1 class="page-title">Cover Changer</h1><p class="page-subtitle">Replace the cover art on any book in your library</p></div>
@@ -335,8 +319,8 @@
         <ul class="steps-list">
           <li>Choose a book from your library.</li>
           <li>Upload a new cover image (JPG or PNG, ideally 1600×2400 px).</li>
-          <li>Click <strong>Apply Cover</strong> — saved to localStorage, persists across sessions.</li>
-          <li>Re-download the epub and re-sideload to your device.</li>
+          <li>Click <strong>Apply Cover</strong> — the cover is saved to your library entry.</li>
+          <li>When you <strong>Download</strong> the book, the new cover is automatically embedded into the epub file.</li>
         </ul>
       </div>
       <div class="panel" style="margin-top:1.5rem">
@@ -347,45 +331,63 @@
   </div>
 </div>
 
-<!-- ══ KINDLE ══ -->
+<!-- KINDLE (redesigned) -->
 <div class="page" id="page-kindle">
   <div class="page-header">
-    <div><h1 class="page-title">Send to Kindle</h1><p class="page-subtitle">Deliver books to your device via Amazon's email</p></div>
-    <button class="btn btn-ghost btn-sm" onclick="openKindleSettings()">⚙ Kindle Settings</button>
+    <div><h1 class="page-title">Send to Kindle</h1><p class="page-subtitle">Download your books then send them wirelessly via Amazon's web uploader</p></div>
   </div>
+
+  <div class="kindle-hero">
+    <div class="kindle-hero-logo">📱</div>
+    <div class="kindle-hero-text">
+      <h2>Amazon Send to Kindle</h2>
+      <p>Select books below, download them with one click, then drag &amp; drop onto Amazon's Send to Kindle page — no email or app setup required. Files go straight to your Kindle library.</p>
+    </div>
+    <a class="kindle-hero-btn" href="https://www.amazon.com/sendtokindle" target="_blank">Open Send to Kindle ↗</a>
+  </div>
+
   <div class="kindle-layout">
     <div>
-      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
-        <p style="font-size:0.875rem;color:var(--brown-mid);flex:1">Select books to send. Files must be loaded this session to download.</p>
-        <span class="sel-badge" id="selected-count">0 selected</span>
+      <div class="kindle-toolbar">
+        <span style="font-size:0.875rem;color:var(--brown-mid);flex:1">Click a book to select it</span>
+        <span class="sel-badge orange" id="selected-count">0 selected</span>
+        <button class="btn btn-ghost btn-sm" onclick="toggleSelectAll()">Select all</button>
       </div>
       <div class="kindle-send-list" id="kindle-list"></div>
+      <div class="dl-progress" id="dl-progress">
+        <div class="dl-label" id="dl-label">Preparing downloads…</div>
+        <div class="dl-bar-wrap"><div class="dl-bar" id="dl-bar" style="width:0%"></div></div>
+      </div>
     </div>
+
     <div class="kindle-sidebar">
       <div class="panel">
-        <div class="panel-title">📧 Kindle Email</div>
-        <div class="form-group"><label class="form-label">Your Kindle email</label><div class="k-email" id="kindle-email-display">not set</div></div>
-        <div class="form-group"><label class="form-label">Sender email (approved by Amazon)</label><div class="k-email" id="sender-email-display">not set</div></div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem" onclick="sendSelectedBooks()">📨 Send Selected</button>
+        <div class="panel-title">📥 How to send</div>
+        <ul class="steps-list">
+          <li>Select the books you want (click to toggle).</li>
+          <li>Click <strong>Download Selected</strong> — each epub saves to your computer. Custom covers are embedded automatically.</li>
+          <li>Click <strong>Open Send to Kindle</strong> and sign in with Amazon.</li>
+          <li>Drag &amp; drop the downloaded files onto the page and click <strong>Send</strong>.</li>
+          <li>Done — books appear in your Kindle library in seconds.</li>
+        </ul>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:1.25rem">
+          <button class="btn btn-primary" style="justify-content:center" onclick="downloadSelected()">⬇ Download Selected</button>
+          <a class="btn btn-kindle" style="justify-content:center" href="https://www.amazon.com/sendtokindle" target="_blank">📱 Open Send to Kindle ↗</a>
+        </div>
         <div id="kindle-status" class="status-msg"></div>
       </div>
-      <div class="panel" style="margin-top:1.5rem">
-        <div class="panel-title">📋 Setup guide</div>
-        <ul class="steps-list">
-          <li>Go to <strong>Amazon → Manage Content → Preferences → Personal Document Settings</strong>.</li>
-          <li>Find your Kindle's Send-to-Kindle email.</li>
-          <li>Add your sender email to the Approved list.</li>
-          <li>Enter both in ⚙ Kindle Settings, select books and send.</li>
-        </ul>
+      <div class="panel" style="margin-top:1.25rem">
+        <div class="panel-title">💡 Tips</div>
+        <p style="font-size:0.82rem;color:var(--brown-mid);line-height:1.7">Amazon supports <strong style="color:var(--brown-dark)">EPUB, PDF, DOCX, TXT</strong> and more, up to 200 MB per file. Books with a custom cover will have it embedded in the downloaded file.</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ REPAIR ══ -->
+<!-- REPAIR -->
 <div class="page" id="page-repair">
   <div class="page-header">
-    <div><h1 class="page-title">Repair &amp; Clean</h1><p class="page-subtitle">AI reads your epub, fixes what it can, and hands you back a clean file — in one step</p></div>
+    <div><h1 class="page-title">Repair &amp; Clean</h1><p class="page-subtitle">AI reads your epub, fixes what it can, and hands you back a clean file</p></div>
   </div>
   <div class="mode-toggle">
     <button class="mode-btn active" id="mode-btn-api" onclick="setRepairMode('api')">⚡ API (paid)</button>
@@ -398,7 +400,7 @@
     <span style="font-size:0.72rem;color:var(--brown-mid);font-style:italic;width:100%;margin-top:-0.25rem">Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--rust)">console.anthropic.com</a> — new accounts get $5 free (~200 analyses). Key saved to localStorage.</span>
   </div>
   <div id="free-mode-banner" class="claude-bar" style="display:none">
-    <p>No API key needed. Drop your epub below — Folio analyses it and generates the perfect repair prompt. You upload the epub + paste the prompt into Claude.ai and Claude hands you back the fixed file directly.</p>
+    <p>No API key needed. Drop your epub below — Folio analyses it and generates the perfect repair prompt. Upload the epub + paste the prompt into Claude.ai and Claude hands you back the fixed file directly.</p>
     <a href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
   </div>
   <div class="repair-layout">
@@ -426,45 +428,35 @@
       </div>
       <div id="free-prompt-section" style="display:none">
         <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:0.5rem">
-
-          <!-- Step 1 -->
           <div style="background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:10px;padding:1rem 1.25rem">
             <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem">
               <span style="width:26px;height:26px;border-radius:50%;background:var(--rust);color:var(--cream);font-family:'Playfair Display',serif;font-size:0.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</span>
               <strong style="font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--brown-dark)">Save your epub to your computer</strong>
             </div>
             <p style="font-size:0.82rem;color:var(--brown-mid);margin-bottom:0.75rem">You'll need to upload this file to Claude.ai in the next step.</p>
-            <button class="btn btn-secondary btn-sm" onclick="downloadOriginalEpub()" id="step1-btn">⬇ Download epub</button>
+            <button class="btn btn-secondary btn-sm" onclick="downloadOriginalEpub()">⬇ Download epub</button>
           </div>
-
-          <!-- Step 2 -->
           <div style="background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:10px;padding:1rem 1.25rem">
             <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem">
               <span style="width:26px;height:26px;border-radius:50%;background:var(--rust);color:var(--cream);font-family:'Playfair Display',serif;font-size:0.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</span>
               <strong style="font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--brown-dark)">Copy the repair prompt</strong>
             </div>
-            <p style="font-size:0.82rem;color:var(--brown-mid);margin-bottom:0.75rem">This prompt contains your epub's full structure and tells Claude exactly what to fix and how to respond.</p>
+            <p style="font-size:0.82rem;color:var(--brown-mid);margin-bottom:0.75rem">This prompt tells Claude exactly what to fix.</p>
             <div class="prompt-box" id="prompt-box" style="max-height:180px"></div>
-            <div style="display:flex;gap:0.5rem;margin-top:0.6rem">
-              <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copy prompt</button>
-            </div>
+            <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copy prompt</button>
           </div>
-
-          <!-- Step 3 -->
           <div style="background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:10px;padding:1rem 1.25rem">
             <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem">
               <span style="width:26px;height:26px;border-radius:50%;background:var(--rust);color:var(--cream);font-family:'Playfair Display',serif;font-size:0.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</span>
               <strong style="font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--brown-dark)">Go to Claude.ai — upload + paste</strong>
             </div>
-            <p style="font-size:0.82rem;color:var(--brown-mid);margin-bottom:0.4rem">In a new Claude.ai chat:</p>
             <ol style="font-size:0.82rem;color:var(--brown-mid);padding-left:1.2rem;line-height:2;margin-bottom:0.75rem">
-              <li>Click the <strong style="color:var(--brown-dark)">paperclip / attach</strong> icon and upload your epub file</li>
-              <li>Paste the copied prompt into the message box</li>
-              <li>Send — Claude will respond with an HTML artifact that auto-downloads your fixed epub</li>
+              <li>Attach your epub file via the paperclip icon</li>
+              <li>Paste the copied prompt and send</li>
+              <li>Claude responds with an HTML artifact that downloads your fixed epub</li>
             </ol>
-            <a class="btn btn-claude btn-sm" id="free-claude-link" href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
+            <a class="btn btn-claude btn-sm" href="https://claude.ai" target="_blank">Open Claude.ai ↗</a>
           </div>
-
         </div>
       </div>
       <div class="repair-results" id="repair-results">
@@ -478,10 +470,8 @@
         <div class="r-section"><div class="r-section-title">🚨 Issues Found</div><ul class="issue-list" id="issues-list"></ul></div>
         <div class="r-section"><div class="r-section-title">✅ What Looks Good</div><ul class="issue-list" id="good-list"></ul></div>
         <div class="r-section"><div class="r-section-title">💡 Recommendations</div><ul class="issue-list" id="recs-list"></ul></div>
-
-        <!-- FIXES APPLIED SUMMARY -->
         <div id="fix-panel" style="display:none;margin-top:1.5rem;background:var(--parchment);border:1.5px solid var(--warm-tan);border-radius:10px;padding:1.25rem">
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--brown-dark);margin-bottom:0.75rem">✨ Fixes Applied & Downloaded</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--brown-dark);margin-bottom:0.75rem">✨ Fixes Applied &amp; Downloaded</div>
           <ul id="fix-list" style="list-style:none;display:flex;flex-direction:column;gap:0.45rem;margin-bottom:0.75rem"></ul>
           <div id="fix-status" class="status-msg"></div>
         </div>
@@ -505,7 +495,7 @@
           <li><strong>Navigation</strong> — NCX dtb:uid sync, playOrder renumbering, duplicate id removal.</li>
           <li><strong>File hygiene</strong> — removes broken manifest hrefs &amp; dangling spine itemrefs.</li>
           <li><strong>Compendium TOC</strong> — rebuilds navMap for epubmerge / multi-book epubs.</li>
-          <li><strong>Free mode</strong> — Folio gives you 3 clear steps: save your epub, copy the generated prompt, then upload both to Claude.ai. Claude hands back the fixed file directly.</li>
+          <li><strong>Free mode</strong> — Folio generates a repair prompt; upload both to Claude.ai to fix.</li>
         </ul>
       </div>
     </div>
@@ -531,71 +521,34 @@
     <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('delete-modal')">Cancel</button><button class="btn btn-danger" onclick="confirmDelete()">Remove</button></div>
   </div>
 </div>
-<div class="modal-backdrop" id="kindle-modal">
-  <div class="modal">
-    <div class="modal-header"><h2 class="modal-title">Kindle Settings</h2><button class="modal-close" onclick="closeModal('kindle-modal')">✕</button></div>
-    <div class="form-group"><label class="form-label">Your Kindle email address</label><input class="form-input" id="kindle-email-input" type="email" placeholder="yourname_abc123@kindle.com" /></div>
-    <div class="form-group"><label class="form-label">Your sender email address</label><input class="form-input" id="sender-email-input" type="email" placeholder="you@gmail.com" /><p style="font-size:0.75rem;color:var(--brown-mid);margin-top:0.35rem">Must be approved in your Amazon account settings.</p></div>
-    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal('kindle-modal')">Cancel</button><button class="btn btn-primary" onclick="saveKindleSettings()">Save</button></div>
-  </div>
-</div>
 <div class="toast-container" id="toast-container"></div>
 
-<!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-nav" id="mobile-nav" role="tablist">
-  <button class="mobile-nav-btn active" id="mnav-library" onclick="switchPage('library',document.querySelector('.nav-btn'),this)" role="tab" aria-label="Library">
-    <span class="mn-icon">📚</span>Library
-  </button>
-  <button class="mobile-nav-btn" id="mnav-covers" onclick="switchPage('covers',document.querySelectorAll('.nav-btn')[1],this)" role="tab" aria-label="Covers">
-    <span class="mn-icon">🖼</span>Covers
-  </button>
-  <button class="mobile-nav-btn" id="mnav-kindle" onclick="switchPage('kindle',document.querySelectorAll('.nav-btn')[2],this)" role="tab" aria-label="Kindle">
-    <span class="mn-icon">📨</span>Kindle
-  </button>
-  <button class="mobile-nav-btn" id="mnav-repair" onclick="switchPage('repair',document.querySelectorAll('.nav-btn')[3],this)" role="tab" aria-label="Repair">
-    <span class="mn-icon">🔧</span>Repair
-  </button>
+  <button class="mobile-nav-btn active" id="mnav-library" onclick="switchPage('library',document.querySelector('.nav-btn'),this)" role="tab" aria-label="Library"><span class="mn-icon">📚</span>Library</button>
+  <button class="mobile-nav-btn" id="mnav-covers" onclick="switchPage('covers',document.querySelectorAll('.nav-btn')[1],this)" role="tab" aria-label="Covers"><span class="mn-icon">🖼</span>Covers</button>
+  <button class="mobile-nav-btn" id="mnav-kindle" onclick="switchPage('kindle',document.querySelectorAll('.nav-btn')[2],this)" role="tab" aria-label="Kindle"><span class="mn-icon">📨</span>Kindle</button>
+  <button class="mobile-nav-btn" id="mnav-repair" onclick="switchPage('repair',document.querySelectorAll('.nav-btn')[3],this)" role="tab" aria-label="Repair"><span class="mn-icon">🔧</span>Repair</button>
 </nav>
 
 <script>
-// ══════════════════════════════════════════
-//  WHAT PERSISTS
-//  localStorage  → book metadata + cover art (base64) + settings + API key
-//  sessionStorage → actual epub file blobs (survive refresh, cleared on tab close)
-//  in-memory      → File objects re-attached from sessionStorage on load
-// ══════════════════════════════════════════
-
-const LS  = 'folio_books';
-const SS  = 'folio_files'; // { [id]: { dataUrl, name } }
+const LS = 'folio_books', SS = 'folio_files';
 
 function loadMeta() { try { return JSON.parse(localStorage.getItem(LS)||'[]'); } catch { return []; } }
-
 function saveMeta() {
-  const rows = books.map(({id,title,author,tag,added,coverUrl,fileExt}) =>
-    ({id,title,author,tag,added,coverUrl:coverUrl||null,fileExt:fileExt||'.epub'}));
-  try {
-    localStorage.setItem(LS, JSON.stringify(rows));
-  } catch {
-    // Probably full of cover art — save without covers
+  const rows = books.map(({id,title,author,tag,added,coverUrl,fileExt}) => ({id,title,author,tag,added,coverUrl:coverUrl||null,fileExt:fileExt||'.epub'}));
+  try { localStorage.setItem(LS, JSON.stringify(rows)); }
+  catch {
     const slim = books.map(({id,title,author,tag,added,fileExt}) => ({id,title,author,tag,added,fileExt:fileExt||'.epub'}));
     try { localStorage.setItem(LS, JSON.stringify(slim)); } catch {}
-    toast('Storage full — some covers may not persist. Consider clearing old entries.','error');
+    toast('Storage full — some covers may not persist.','error');
   }
 }
-
 function ssLoad() { try { return JSON.parse(sessionStorage.getItem(SS)||'{}'); } catch { return {}; } }
-
 function ssSave(id, file) {
   const r = new FileReader();
-  r.onload = ev => {
-    try {
-      const s = ssLoad(); s[id] = {dataUrl: ev.target.result, name: file.name};
-      sessionStorage.setItem(SS, JSON.stringify(s));
-    } catch {} // session storage full — skip
-  };
+  r.onload = ev => { try { const s=ssLoad(); s[id]={dataUrl:ev.target.result,name:file.name}; sessionStorage.setItem(SS,JSON.stringify(s)); } catch {} };
   r.readAsDataURL(file);
 }
-
 function ssGet(id) {
   const e = ssLoad()[id]; if (!e) return null;
   try {
@@ -607,22 +560,20 @@ function ssGet(id) {
   } catch { return null; }
 }
 
-// ══ STATE ══
 let books = [];
 let editingId = null, deletingId = null, newCoverFile = null;
 let selectedForKindle = new Set();
 let repairMode = 'api', repairFile = null, repairBookId = null, repairMetaSug = null;
+let lastAnalysis = null, lastInfo = null;
 
 function genId() { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ══ BOOT ══
 function boot() {
   books = loadMeta().map(m => ({...m, file: ssGet(m.id)}));
   const k = localStorage.getItem('folio_api_key');
   if (k) { const el=document.getElementById('repair-api-key'); if(el) el.value=k; }
-  renderLibrary();
-  updateBanner();
+  renderLibrary(); updateBanner();
 }
 
 function updateBanner() {
@@ -631,19 +582,11 @@ function updateBanner() {
   if (!n) { banner.style.display='none'; return; }
   banner.style.display='flex';
   const dot=document.getElementById('s-dot'), msg=document.getElementById('s-msg');
-  if (loaded===n) {
-    dot.className='s-dot';
-    msg.innerHTML=`<strong>${n} book${n!==1?'s':''}</strong> — metadata &amp; covers saved. All files loaded this session ✓`;
-  } else if (loaded===0) {
-    dot.className='s-dot warn';
-    msg.innerHTML=`<strong>${n} book${n!==1?'s':''}</strong> — metadata &amp; covers saved. <strong>Re-upload epub files</strong> this session to download or repair.`;
-  } else {
-    dot.className='s-dot warn';
-    msg.innerHTML=`<strong>${n} books</strong> — ${loaded} files loaded, ${n-loaded} need re-uploading to download or repair.`;
-  }
+  if (loaded===n) { dot.className='s-dot'; msg.innerHTML=`<strong>${n} book${n!==1?'s':''}</strong> — all files loaded this session ✓`; }
+  else if (loaded===0) { dot.className='s-dot warn'; msg.innerHTML=`<strong>${n} book${n!==1?'s':''}</strong> — <strong>Re-upload epub files</strong> this session to download or repair.`; }
+  else { dot.className='s-dot warn'; msg.innerHTML=`<strong>${n} books</strong> — ${loaded} loaded, ${n-loaded} need re-uploading.`; }
 }
 
-// ══ NAV ══
 function switchPage(name, btn, mobileBtn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -657,7 +600,6 @@ function switchPage(name, btn, mobileBtn) {
   if (name === 'repair') populateRepairSelect();
 }
 
-// ══ FILE UPLOAD ══
 document.getElementById('file-input-lib').addEventListener('change', e=>handleFiles(e.target.files));
 const uz=document.getElementById('upload-zone');
 uz.addEventListener('dragover', e=>{e.preventDefault(); uz.classList.add('dragover');});
@@ -671,13 +613,12 @@ function handleFiles(files) {
     if (!ok.includes(ext)) return;
     const id=genId();
     const title=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
-    books.unshift({id, title, author:'Unknown Author', tag:'', added:Date.now(), file, fileExt:ext, coverUrl:null});
+    books.unshift({id,title,author:'Unknown Author',tag:'',added:Date.now(),file,fileExt:ext,coverUrl:null});
     ssSave(id, file); added++;
   });
   if (added) { saveMeta(); renderLibrary(); updateBanner(); toast(`Added ${added} book${added>1?'s':''}`,'success'); }
 }
 
-// ══ LIBRARY ══
 function filterBooks() {
   const q=document.getElementById('search-input').value.toLowerCase();
   const tag=document.getElementById('tag-filter').value;
@@ -702,10 +643,7 @@ function renderLibrary() {
 
 function renderGrid(list) {
   const g=document.getElementById('book-grid');
-  if (!list.length) {
-    g.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📚</div><h3>${books.length?'No results':'Your shelves are empty'}</h3><p>${books.length?'Try adjusting your search.':'Drop some epub files above to get started.'}</p></div>`;
-    return;
-  }
+  if (!list.length) { g.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📚</div><h3>${books.length?'No results':'Your shelves are empty'}</h3><p>${books.length?'Try adjusting your search.':'Drop some epub files above to get started.'}</p></div>`; return; }
   g.innerHTML=list.map(b=>`
     <div class="book-card${b.file?'':' no-file'}" id="card-${b.id}">
       ${b.coverUrl?`<img class="book-cover" src="${b.coverUrl}" alt="${esc(b.title)}" />`:`<div class="book-cover-placeholder">📖<span>${esc(b.title.slice(0,18))}</span></div>`}
@@ -723,7 +661,6 @@ function renderGrid(list) {
     </div>`).join('');
 }
 
-// ══ EDIT ══
 function openEditModal(id) {
   editingId=id; const b=books.find(x=>x.id===id);
   document.getElementById('edit-title').value=b.title;
@@ -739,7 +676,6 @@ function saveEdit() {
   closeModal('edit-modal'); saveMeta(); renderLibrary(); toast('Book updated','success');
 }
 
-// ══ DELETE ══
 function openDeleteModal(id) {
   deletingId=id;
   document.getElementById('delete-name').textContent=`"${books.find(x=>x.id===id).title}"`;
@@ -751,13 +687,81 @@ function confirmDelete() {
   closeModal('delete-modal'); saveMeta(); renderLibrary(); updateBanner(); toast('Book removed','success');
 }
 
-// ══ DOWNLOAD ══
-function downloadBook(id) {
-  const b=books.find(x=>x.id===id);
-  if (!b||!b.file) { toast('Re-upload this file first','error'); return; }
-  const url=URL.createObjectURL(b.file);
-  const a=document.createElement('a'); a.href=url; a.download=b.file.name; a.click();
+// ══════════════════════════════════
+//  DOWNLOAD WITH COVER EMBEDDING
+// ══════════════════════════════════
+async function downloadBook(id) {
+  const b = books.find(x => x.id === id);
+  if (!b || !b.file) { toast('Re-upload this file first', 'error'); return; }
+  if (!b.coverUrl) {
+    // No custom cover — serve original
+    triggerDownload(b.file, b.file.name);
+    return;
+  }
+  try {
+    toast('Embedding cover into epub…', 'success');
+    const blob = await embedCoverIntoEpub(b.file, b.coverUrl);
+    triggerDownload(blob, b.file.name);
+    toast('Downloaded with custom cover ✓', 'success');
+  } catch (err) {
+    toast('Cover embed failed, downloading original: ' + err.message, 'error');
+    triggerDownload(b.file, b.file.name);
+  }
+}
+
+function triggerDownload(blobOrFile, filename) {
+  const url = URL.createObjectURL(blobOrFile);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+}
+
+async function embedCoverIntoEpub(file, coverDataUrl) {
+  if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+  const ab = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(ab);
+  const zipFiles = Object.keys(zip.files).filter(f => !zip.files[f].dir);
+
+  // Locate OPF
+  let opfPath = null;
+  const contFile = zip.file('META-INF/container.xml');
+  if (contFile) { const cont = await contFile.async('text'); const m = cont.match(/full-path="([^"]+\.opf)"/i); if (m) opfPath = m[1]; }
+  if (!opfPath) opfPath = zipFiles.find(f => f.endsWith('.opf'));
+  if (!opfPath) throw new Error('No OPF found in epub');
+
+  const opfDir = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
+
+  // Decode cover image
+  const [header, b64] = coverDataUrl.split(',');
+  const mimeMatch = header.match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const ext  = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+  const coverFilename = `folio_cover.${ext}`;
+  const coverPath = opfDir + coverFilename;
+
+  const binStr = atob(b64); const bytes = new Uint8Array(binStr.length);
+  for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+  zip.file(coverPath, bytes);
+
+  // Patch OPF
+  let opf = await zip.file(opfPath).async('text');
+
+  // Remove any old cover-image items to avoid duplicates
+  opf = opf.replace(/<item[^>]*id="cover-image"[^>]*\/>\s*/gi, '');
+  opf = opf.replace(/<item[^>]*properties="cover-image"[^>]*\/>\s*/gi, '');
+
+  // Inject new cover item before </manifest>
+  const coverItem = `  <item id="cover-image" href="${coverFilename}" media-type="${mime}" properties="cover-image"/>\n`;
+  opf = opf.replace(/<\/manifest>/i, coverItem + '</manifest>');
+
+  // Set/replace <meta name="cover"> in metadata
+  if (/<meta\s+name="cover"/i.test(opf)) {
+    opf = opf.replace(/<meta\s+name="cover"\s+content="[^"]*"\s*\/>/gi, `<meta name="cover" content="cover-image"/>`);
+  } else {
+    opf = opf.replace(/<\/metadata>/i, `  <meta name="cover" content="cover-image"/>\n</metadata>`);
+  }
+
+  zip.file(opfPath, opf);
+  return await zip.generateAsync({ type:'blob', mimeType:'application/epub+zip', compression:'DEFLATE', compressionOptions:{level:6} });
 }
 
 // ══ COVERS ══
@@ -805,7 +809,7 @@ function applyCover() {
     document.getElementById('cover-cur-img').style.display='block';
     document.getElementById('cover-ph').style.display='none';
     saveMeta(); renderLibrary();
-    setStatus('cover-status','✓ Cover updated and saved.','success');
+    setStatus('cover-status','✓ Cover saved — it will be embedded when you download this epub.','success');
     toast('Cover updated for "'+b.title+'"','success');
   };
   r.readAsDataURL(newCoverFile);
@@ -813,45 +817,60 @@ function applyCover() {
 
 // ══ KINDLE ══
 function renderKindleList() {
-  const ke=localStorage.getItem('folio_kindle_email')||'', se=localStorage.getItem('folio_sender_email')||'';
-  document.getElementById('kindle-email-display').textContent=ke||'not set';
-  document.getElementById('sender-email-display').textContent=se||'not set';
   const list=document.getElementById('kindle-list');
   if (!books.length) { list.innerHTML=`<div class="empty-state" style="padding:2.5rem"><div class="empty-icon">📨</div><h3>No books yet</h3><p>Add books in the Library tab first.</p></div>`; return; }
   list.innerHTML=books.map(b=>`
-    <div class="kindle-item">
+    <div class="kindle-item${selectedForKindle.has(b.id)?' selected':''}${!b.file?' no-file-item':''}" ${b.file?`onclick="toggleK('${b.id}')"`:''} id="ki-${b.id}">
       ${b.coverUrl?`<img class="k-cover" src="${b.coverUrl}" style="width:40px;height:58px;border-radius:3px;object-fit:cover" />`:`<div class="k-cover">📖</div>`}
       <div class="k-info">
         <div class="k-title">${esc(b.title)}</div>
-        <div class="k-meta">${esc(b.author)}${b.fileExt?' · '+b.fileExt.replace('.','').toUpperCase():''}${!b.file?' · <span style="color:var(--rust)">no file</span>':''}</div>
+        <div class="k-meta">${esc(b.author)}${b.fileExt?' · '+b.fileExt.replace('.','').toUpperCase():''}${!b.file?' · <span class="k-no-file-pill">no file</span>':''}</div>
       </div>
-      <div class="k-check ${selectedForKindle.has(b.id)?'checked':''}" onclick="toggleK('${b.id}')">${selectedForKindle.has(b.id)?'✓':''}</div>
+      <div class="k-check">${selectedForKindle.has(b.id)?'✓':''}</div>
     </div>`).join('');
   document.getElementById('selected-count').textContent=`${selectedForKindle.size} selected`;
 }
-function toggleK(id) { if (selectedForKindle.has(id)) selectedForKindle.delete(id); else selectedForKindle.add(id); renderKindleList(); }
-function openKindleSettings() {
-  document.getElementById('kindle-email-input').value=localStorage.getItem('folio_kindle_email')||'';
-  document.getElementById('sender-email-input').value=localStorage.getItem('folio_sender_email')||'';
-  openModal('kindle-modal');
+
+function toggleK(id) {
+  if (selectedForKindle.has(id)) selectedForKindle.delete(id); else selectedForKindle.add(id);
+  renderKindleList();
 }
-function saveKindleSettings() {
-  const ke=document.getElementById('kindle-email-input').value.trim(), se=document.getElementById('sender-email-input').value.trim();
-  if(ke) localStorage.setItem('folio_kindle_email',ke);
-  if(se) localStorage.setItem('folio_sender_email',se);
-  closeModal('kindle-modal'); renderKindleList(); toast('Kindle settings saved','success');
+
+function toggleSelectAll() {
+  const withFiles = books.filter(b => b.file).map(b => b.id);
+  const allSel = withFiles.every(id => selectedForKindle.has(id));
+  if (allSel) selectedForKindle.clear(); else withFiles.forEach(id => selectedForKindle.add(id));
+  renderKindleList();
 }
-function sendSelectedBooks() {
-  const ke=localStorage.getItem('folio_kindle_email')||'', se=localStorage.getItem('folio_sender_email')||'';
-  if (!ke||!se) { setStatus('kindle-status','Set up your Kindle and sender email in Settings first.','error'); return; }
-  if (!selectedForKindle.size) { setStatus('kindle-status','Select at least one book.','error'); return; }
-  const sel=books.filter(b=>selectedForKindle.has(b.id));
-  const subj=encodeURIComponent('Folio: '+sel.map(b=>b.title).join(' | '));
-  const body=encodeURIComponent('Sending from Folio:\n\n'+sel.map(b=>`• ${b.title} by ${b.author}`).join('\n'));
-  window.open(`mailto:${ke}?subject=${subj}&body=${body}`);
-  sel.forEach(b=>{ if(b.file) setTimeout(()=>downloadBook(b.id),400); });
-  setStatus('kindle-status','✓ Email opened. Attach the downloaded epub files and send.','success');
-  toast(`Email opened for ${sel.length} book${sel.length>1?'s':''}`, 'success');
+
+async function downloadSelected() {
+  if (!selectedForKindle.size) { setStatus('kindle-status','Select at least one book first.','error'); return; }
+  const sel = books.filter(b => selectedForKindle.has(b.id) && b.file);
+  if (!sel.length) { setStatus('kindle-status','None of the selected books have files loaded. Re-upload them first.','error'); return; }
+
+  const prog=document.getElementById('dl-progress'), bar=document.getElementById('dl-bar'), lbl=document.getElementById('dl-label');
+  prog.classList.add('visible'); setStatus('kindle-status','','');
+
+  for (let i=0; i<sel.length; i++) {
+    const b = sel[i];
+    lbl.textContent = `Downloading ${i+1} of ${sel.length}: ${b.title}…`;
+    bar.style.width = Math.round((i/sel.length)*100)+'%';
+    try {
+      if (b.coverUrl) {
+        const blob = await embedCoverIntoEpub(b.file, b.coverUrl);
+        triggerDownload(blob, b.file.name);
+      } else {
+        triggerDownload(b.file, b.file.name);
+      }
+      await new Promise(r => setTimeout(r, 400)); // stagger to avoid browser blocking
+    } catch(err) { toast(`Error downloading "${b.title}": ${err.message}`, 'error'); }
+  }
+
+  bar.style.width='100%';
+  lbl.textContent=`✓ ${sel.length} book${sel.length>1?'s':''} downloaded — now drag them onto Send to Kindle!`;
+  setTimeout(()=>prog.classList.remove('visible'), 6000);
+  setStatus('kindle-status',`✓ ${sel.length} file${sel.length>1?'s':''} downloaded. Drag &amp; drop onto <a href="https://www.amazon.com/sendtokindle" target="_blank" style="color:var(--rust)">amazon.com/sendtokindle</a> and click Send.`,'success');
+  toast(`${sel.length} book${sel.length>1?'s':''} ready — open Send to Kindle!`,'success');
 }
 
 // ══ REPAIR ══
@@ -880,8 +899,7 @@ function loadRepairFromLibrary() {
   const id=document.getElementById('repair-lib-select').value; if (!id) return;
   const b=books.find(x=>x.id===id);
   if (!b||!b.file) { toast('No file loaded for this book — re-upload it first','error'); return; }
-  repairFile=b.file; repairBookId=b.id;
-  showRepairCard(b.file.name, b.file.size);
+  repairFile=b.file; repairBookId=b.id; showRepairCard(b.file.name, b.file.size);
 }
 function showRepairCard(name, size) {
   document.getElementById('repair-file-card').style.display='flex';
@@ -897,540 +915,257 @@ function showRepairCard(name, size) {
 const rdz=document.getElementById('repair-dz');
 rdz.addEventListener('dragover',e=>{e.preventDefault();rdz.classList.add('dragover');});
 rdz.addEventListener('dragleave',()=>rdz.classList.remove('dragover'));
-rdz.addEventListener('drop',e=>{
-  e.preventDefault();rdz.classList.remove('dragover');
-  const f=e.dataTransfer.files[0]; if(f&&f.name.endsWith('.epub')) { repairFile=f; repairBookId=null; showRepairCard(f.name,f.size); }
-});
-document.getElementById('repair-file-input').addEventListener('change',e=>{
-  const f=e.target.files[0]; if(f) { repairFile=f; repairBookId=null; showRepairCard(f.name,f.size); }
-});
+rdz.addEventListener('drop',e=>{ e.preventDefault();rdz.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f&&f.name.endsWith('.epub')) { repairFile=f; repairBookId=null; showRepairCard(f.name,f.size); } });
+document.getElementById('repair-file-input').addEventListener('change',e=>{ const f=e.target.files[0]; if(f) { repairFile=f; repairBookId=null; showRepairCard(f.name,f.size); } });
 
 async function runRepair() {
-  if (!repairFile) { toast('No epub loaded', 'error'); return; }
+  if (!repairFile) { toast('No epub loaded','error'); return; }
   document.getElementById('repair-thinking').classList.add('visible');
   document.getElementById('repair-results').classList.remove('visible');
-  document.getElementById('free-prompt-section').style.display = 'none';
-  document.getElementById('metadata-panel').style.display = 'none';
-  document.getElementById('fix-panel').style.display = 'none';
-
-  const phases = ['Unpacking epub…','Reading OPF & manifest…','Parsing NCX navigation…','Extracting full content…','Sending to Claude…'];
-  let pi = 0; const ph = document.getElementById('thinking-phase');
-  const iv = setInterval(() => { if (ph && pi < phases.length) ph.textContent = phases[pi++]; }, 900);
-
+  document.getElementById('free-prompt-section').style.display='none';
+  document.getElementById('metadata-panel').style.display='none';
+  document.getElementById('fix-panel').style.display='none';
+  const phases=['Unpacking epub…','Reading OPF & manifest…','Parsing NCX navigation…','Extracting full content…','Sending to Claude…'];
+  let pi=0; const ph=document.getElementById('thinking-phase');
+  const iv=setInterval(()=>{ if(ph&&pi<phases.length) ph.textContent=phases[pi++]; },900);
   try {
-    const ab = await repairFile.arrayBuffer();
-    const info = await extractEpub(ab, repairFile.name);
-    lastInfo = info;
-    clearInterval(iv);
-    if (repairMode === 'free') {
+    const ab=await repairFile.arrayBuffer();
+    const info=await extractEpub(ab,repairFile.name);
+    lastInfo=info; clearInterval(iv);
+    if (repairMode==='free') {
       document.getElementById('repair-thinking').classList.remove('visible');
       showFreePrompt(info);
     } else {
-      const key = document.getElementById('repair-api-key').value.trim() || localStorage.getItem('folio_api_key') || '';
-      if (!key) { document.getElementById('repair-thinking').classList.remove('visible'); toast('Enter your Anthropic API key first', 'error'); return; }
-      if (ph) ph.textContent = 'Claude is reading & repairing…';
-      const result = await callClaude(key, info);
+      const key=document.getElementById('repair-api-key').value.trim()||localStorage.getItem('folio_api_key')||'';
+      if (!key) { document.getElementById('repair-thinking').classList.remove('visible'); toast('Enter your Anthropic API key first','error'); return; }
+      if (ph) ph.textContent='Claude is reading & repairing…';
+      const result=await callClaude(key,info);
       document.getElementById('repair-thinking').classList.remove('visible');
-      renderResults(result);
-      await applyFixesAndDownload(result);
+      renderResults(result); await applyFixesAndDownload(result);
     }
-  } catch (err) {
-    clearInterval(iv);
-    document.getElementById('repair-thinking').classList.remove('visible');
-    toast('Error: ' + err.message, 'error');
-  }
+  } catch(err) { clearInterval(iv); document.getElementById('repair-thinking').classList.remove('visible'); toast('Error: '+err.message,'error'); }
 }
 
 async function extractEpub(ab, filename) {
   if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-  const zip = await JSZip.loadAsync(ab);
-  const info = { filename, files:[], opf:null, ncx:null, nav:null, spine:[], manifest:[], metadata:{} };
-  info.files = Object.keys(zip.files).filter(f => !zip.files[f].dir);
-  let opfPath = null;
-  const cont = await zip.file('META-INF/container.xml')?.async('text');
-  if (cont) { const m = cont.match(/full-path="([^"]+\.opf)"/i); if (m) opfPath = m[1]; }
-  if (!opfPath) opfPath = info.files.find(f => f.endsWith('.opf'));
+  const zip=await JSZip.loadAsync(ab);
+  const info={filename,files:[],opf:null,ncx:null,nav:null,spine:[],manifest:[],metadata:{}};
+  info.files=Object.keys(zip.files).filter(f=>!zip.files[f].dir);
+  let opfPath=null;
+  const cont=await zip.file('META-INF/container.xml')?.async('text');
+  if (cont) { const m=cont.match(/full-path="([^"]+\.opf)"/i); if(m) opfPath=m[1]; }
+  if (!opfPath) opfPath=info.files.find(f=>f.endsWith('.opf'));
   if (opfPath) {
-    const opf = await zip.file(opfPath)?.async('text');
+    const opf=await zip.file(opfPath)?.async('text');
     if (opf) {
-      info.opf = opf;
-      const ex = tag => { const m = opf.match(new RegExp(`<dc:${tag}[^>]*>([^<]+)<\\/dc:${tag}>`, 'i')); return m ? m[1].trim() : ''; };
-      info.metadata = { title:ex('title'), creator:ex('creator'), language:ex('language'), publisher:ex('publisher'), date:ex('date'), description:ex('description'), identifier:ex('identifier') };
-      info.spine = [...opf.matchAll(/idref="([^"]+)"/g)].map(m => m[1]);
-      info.manifest = [...opf.matchAll(/href="([^"]+)"/g)].map(m => m[1]).slice(0, 40);
+      info.opf=opf;
+      const ex=tag=>{const m=opf.match(new RegExp(`<dc:${tag}[^>]*>([^<]+)<\\/dc:${tag}>`,'i'));return m?m[1].trim():'';};
+      info.metadata={title:ex('title'),creator:ex('creator'),language:ex('language'),publisher:ex('publisher'),date:ex('date'),description:ex('description'),identifier:ex('identifier')};
+      info.spine=[...opf.matchAll(/idref="([^"]+)"/g)].map(m=>m[1]);
+      info.manifest=[...opf.matchAll(/href="([^"]+)"/g)].map(m=>m[1]).slice(0,40);
     }
   }
-  const ncxF = info.files.find(f => f.endsWith('.ncx'));
-  if (ncxF) { const t = await zip.file(ncxF)?.async('text'); if (t) info.ncx = t; }
-  const navF = info.files.find(f => (f.includes('nav') && f.endsWith('.xhtml')) || f.endsWith('nav.html'));
-  if (navF) { const t = await zip.file(navF)?.async('text'); if (t) info.nav = t.slice(0, 3000); }
-  info.hasCover = info.files.some(f => /cover\.(jpg|jpeg|png|webp)/i.test(f) || f.includes('cover'));
-  info.fileCount = info.files.length;
-  info.opfPath = opfPath || '';
+  const ncxF=info.files.find(f=>f.endsWith('.ncx'));
+  if (ncxF) { const t=await zip.file(ncxF)?.async('text'); if(t) info.ncx=t; }
+  const navF=info.files.find(f=>(f.includes('nav')&&f.endsWith('.xhtml'))||f.endsWith('nav.html'));
+  if (navF) { const t=await zip.file(navF)?.async('text'); if(t) info.nav=t.slice(0,3000); }
+  info.hasCover=info.files.some(f=>/cover\.(jpg|jpeg|png|webp)/i.test(f)||f.includes('cover'));
+  info.fileCount=info.files.length; info.opfPath=opfPath||'';
   return info;
 }
 
 function loadScript(src) {
-  return new Promise((r,j) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = r; s.onerror = j;
-    document.head.appendChild(s);
-  });
+  return new Promise((r,j)=>{ const s=document.createElement('script'); s.src=src; s.onload=r; s.onerror=j; document.head.appendChild(s); });
 }
 
 function buildPrompt(info) {
-  const fixedName = info.filename.replace(/\.epub$/i, '') + '_fixed.epub';
-  const lines = [
-    'You are an epub repair specialist. I have attached the epub file "' + info.filename + '" to this message.',
-    'Analyse it, apply all the fixes described below, and respond with a SINGLE self-contained HTML page — no explanation, no markdown, just the HTML.',
-    '',
-    'The HTML page must:',
-    '1. On load, accept the epub you output as a base64 constant, patch it with JSZip (CDN: https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js), and trigger a browser download of the fixed file named "' + fixedName + '".',
-    '2. Show a minimal status message ("Patching…" → "✓ Done — check your downloads!").',
-    '3. Apply ALL of the following fixes in JS, operating on the in-memory JSZip object:',
-    '',
-    '═══ FIX A — OPF METADATA ═══',
-    'OPF file path in the zip: "' + info.opfPath + '"',
-    'Replace the entire <metadata>…</metadata> block with a corrected version:',
-    '  • Normalise any "Last, First" author to "First Last"',
-    '  • Write a clean plain-text description (strip HTML tags/entities)',
-    '  • Add missing language / publisher / date if inferrable from content',
-    '  • Add calibre:series and calibre:series_index meta tags if a series is detectable',
-    '  • Preserve every existing dc: element — only correct or add, never delete',
-    '',
-    'CURRENT OPF (for reference — read the attached file for the authoritative version):',
-    (info.opf || '(not found)').slice(0, 4000),
-    '',
-    '═══ FIX B — NCX ═══',
-    '  • Set dtb:uid content to match the OPF unique-identifier value',
-    '  • Fix <docTitle><text> to match the corrected title',
-    '  • Renumber all playOrder attributes sequentially from 1',
-    '  • Deduplicate any navPoint id attributes (append _2, _3… suffix)',
-    '',
-    'CURRENT NCX (reference):',
-    (info.ncx || '(not found)').slice(0, 2500),
-    '',
-    '═══ FIX C — MANIFEST HYGIENE ═══',
-    'Remove any <item> whose href does not exist in the zip, and its matching <itemref> from the spine.',
-    '',
-    'Known files in this zip (' + info.fileCount + ' total, sample):',
-    info.files.slice(0, 50).join('\n'),
-    '',
-    '═══ FIX D — EPUB TYPE & COMPENDIUM navMap ═══',
-    'If any manifest hrefs start with a numeric folder prefix (1/, 2/, 3/…), OR there are 2+ titlepage files, OR the OPF contains "epubmerge" — treat as COMPENDIUM.',
-    'For compendiums: group xhtml content docs by numeric folder prefix, create one top-level navPoint per book with chapters nested as children, rewrite the entire <navMap> with sequential playOrder.',
-    '',
-    '═══ HTML OUTPUT FORMAT ═══',
-    'The <script> must:',
-    '  1. Load JSZip from CDN',
-    '  2. Read the attached epub file directly: open the epub attachment → arrayBuffer → JSZip.loadAsync',
-    '     (Use: const resp = await fetch("' + info.filename + '"); const ab = await resp.arrayBuffer(); — Claude artifacts can serve the attachment this way)',
-    '  3. Apply all fixes A–D to the zip object',
-    '  4. zip.generateAsync({type:"blob", mimeType:"application/epub+zip"})',
-    '  5. Trigger download with filename "' + fixedName + '"',
-    '  6. Update status to "✓ Done — check your downloads!"',
-    '',
-    'Style: dark background (#1a1a2e), off-white monospace text, centred, simple.',
-    'Return ONLY the complete HTML. Nothing before <!DOCTYPE or after </html>.',
-  ];
-  return lines.join('\n');
+  const fixedName=info.filename.replace(/\.epub$/i,'')+`_fixed.epub`;
+  return [
+    `You are an epub repair specialist. I have attached "${info.filename}" to this message.`,
+    'Analyse it, apply all fixes below, respond with a SINGLE self-contained HTML page only.',
+    '','The HTML must on load: use JSZip (https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js), patch the zip, trigger download named "'+fixedName+'". Show "Patching…" → "✓ Done".',
+    '','═══ FIX A — OPF METADATA ═══','OPF path: "'+info.opfPath+'"',
+    'Replace <metadata>…</metadata>: normalise author, clean description, add missing lang/publisher/date, add series calibre meta if detectable. Never delete existing dc: elements.',
+    'CURRENT OPF:',(info.opf||'(not found)').slice(0,4000),
+    '','═══ FIX B — NCX ═══','Sync dtb:uid, fix docTitle, renumber playOrder sequentially, deduplicate navPoint ids.',
+    'CURRENT NCX:',(info.ncx||'(not found)').slice(0,2500),
+    '','═══ FIX C — MANIFEST ═══','Remove <item> hrefs absent from zip, remove matching <itemref> from spine.',
+    'Files ('+info.fileCount+' total, sample):',info.files.slice(0,50).join('\n'),
+    '','═══ FIX D — COMPENDIUM ═══','If hrefs start with numeric prefix (1/ 2/ …) or 2+ titlepages or "epubmerge" in OPF: rebuild navMap grouping by folder. One top-level navPoint per book, chapters nested.',
+    '','═══ OUTPUT ═══','Script: fetch attachment → arrayBuffer → JSZip.loadAsync → apply fixes → generateAsync({type:"blob",mimeType:"application/epub+zip"}) → download "'+fixedName+'".',
+    'Style: dark bg #1a1a2e, off-white mono text, centred. Return ONLY complete HTML, nothing before <!DOCTYPE or after </html>.'
+  ].join('\n');
 }
+
 function showFreePrompt(info) {
-  const p = buildPrompt(info);
-  document.getElementById('prompt-box').textContent = p;
-  document.getElementById('free-prompt-section').style.display = 'block';
-  // Scroll to the steps
-  document.getElementById('free-prompt-section').scrollIntoView({behavior:'smooth', block:'start'});
-  toast('Ready — follow the 3 steps below', 'success');
+  document.getElementById('prompt-box').textContent=buildPrompt(info);
+  document.getElementById('free-prompt-section').style.display='block';
+  document.getElementById('free-prompt-section').scrollIntoView({behavior:'smooth',block:'start'});
+  toast('Ready — follow the 3 steps below','success');
 }
 function copyPrompt() {
   navigator.clipboard.writeText(document.getElementById('prompt-box').textContent)
-    .then(() => toast('Prompt copied! Now go to Claude.ai', 'success'))
-    .catch(() => toast('Select and copy the text manually', 'error'));
+    .then(()=>toast('Prompt copied! Now go to Claude.ai','success'))
+    .catch(()=>toast('Select and copy the text manually','error'));
 }
 function downloadOriginalEpub() {
-  if (!repairFile) { toast('No epub loaded', 'error'); return; }
-  const url = URL.createObjectURL(repairFile);
-  const a = document.createElement('a');
-  a.href = url; a.download = repairFile.name; a.click();
-  URL.revokeObjectURL(url);
-  toast('Epub saved — upload it to Claude.ai in step 3', 'success');
+  if (!repairFile) { toast('No epub loaded','error'); return; }
+  triggerDownload(repairFile, repairFile.name);
+  toast('Epub saved — upload it to Claude.ai in step 3','success');
 }
-// parseFreeResponse removed — free mode is now one-shot.
-// Claude returns a self-contained HTML artifact that patches and downloads the epub directly.
 
 async function callClaude(key, info) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      messages: [{ role: 'user', content: buildPrompt(info) }]
-    })
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:buildPrompt(info)}]})
   });
-  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'API error ' + r.status); }
-  const d = await r.json();
-  return JSON.parse(d.content.map(c => c.text || '').join('').replace(/```json|```/g, '').trim());
+  if (!r.ok) { const e=await r.json(); throw new Error(e.error?.message||'API error '+r.status); }
+  const d=await r.json();
+  return JSON.parse(d.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
 }
 
-let lastAnalysis = null;
-let lastInfo = null;
-
-// ── APPLY FIXES & DOWNLOAD ──
 async function applyFixesAndDownload(res) {
-  if (!repairFile || !res.fixes) return;
-  const info_fallback = lastInfo || {};
+  if (!repairFile||!res.fixes) return;
   if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-  const fixes = res.fixes;
-  const applied = [];
+  const fixes=res.fixes; const applied=[];
   try {
-    const ab = await repairFile.arrayBuffer();
-    const zip = await JSZip.loadAsync(ab);
-    let opfPath = null;
-    const cont = await zip.file('META-INF/container.xml')?.async('text');
-    if (cont) { const m = cont.match(/full-path="([^"]+\.opf)"/i); if (m) opfPath = m[1]; }
-    if (!opfPath) opfPath = Object.keys(zip.files).find(f => f.endsWith('.opf'));
-
-    if (fixes.opfMetadataBlock && opfPath) {
-      let opf = await zip.file(opfPath).async('text');
-      const patched = opf.replace(/<metadata[\s\S]*?<\/metadata>/i, fixes.opfMetadataBlock.trim());
-      if (patched !== opf) { zip.file(opfPath, patched); applied.push('OPF metadata updated'); }
+    const ab=await repairFile.arrayBuffer();
+    const zip=await JSZip.loadAsync(ab);
+    let opfPath=null;
+    const cont=await zip.file('META-INF/container.xml')?.async('text');
+    if (cont) { const m=cont.match(/full-path="([^"]+\.opf)"/i); if(m) opfPath=m[1]; }
+    if (!opfPath) opfPath=Object.keys(zip.files).find(f=>f.endsWith('.opf'));
+    if (fixes.opfMetadataBlock&&opfPath) {
+      let opf=await zip.file(opfPath).async('text');
+      const p=opf.replace(/<metadata[\s\S]*?<\/metadata>/i,fixes.opfMetadataBlock.trim());
+      if(p!==opf){zip.file(opfPath,p);applied.push('OPF metadata updated');}
     }
-
     if (fixes.ncxDocTitle) {
-      const ncxPath = Object.keys(zip.files).find(f => f.endsWith('.ncx'));
-      if (ncxPath) {
-        let ncx = await zip.file(ncxPath).async('text');
-        const safe = fixes.ncxDocTitle.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const patched = ncx.replace(/<docTitle>\s*<text>[^<]*<\/text>\s*<\/docTitle>/i,
-          `<docTitle><text>${safe}</text></docTitle>`);
-        if (patched !== ncx) { zip.file(ncxPath, patched); applied.push('NCX title corrected'); }
-      }
+      const np=Object.keys(zip.files).find(f=>f.endsWith('.ncx'));
+      if(np){let n=await zip.file(np).async('text');const s=fixes.ncxDocTitle.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const p=n.replace(/<docTitle>\s*<text>[^<]*<\/text>\s*<\/docTitle>/i,`<docTitle><text>${s}</text></docTitle>`);if(p!==n){zip.file(np,p);applied.push('NCX title corrected');}}
     }
-
-    // Deep structural repair — runs after metadata patches, before zip generation
-    const deepFixes = await deepRepairEpub(zip, res, lastInfo || info_fallback);
+    const deepFixes=await deepRepairEpub(zip,res,lastInfo||{});
     applied.push(...deepFixes);
-
-    const allFixes = [...applied, ...(fixes.appliedFixes || [])];
-    if (!allFixes.length) { toast('No patches needed — epub looks clean!', 'success'); return; }
-
-    const blob = await zip.generateAsync({ type:'blob', mimeType:'application/epub+zip', compression:'DEFLATE', compressionOptions:{level:6} });
-    const base = repairFile.name.replace(/\.epub$/i, '');
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `${base}_fixed.epub`; a.click(); URL.revokeObjectURL(a.href);
-
-    setStatus('fix-status', '✓ ' + allFixes.join(' · '), 'success');
-    toast(`✨ ${allFixes.length} fix${allFixes.length !== 1 ? 'es' : ''} applied — downloading!`, 'success');
-  } catch (err) {
-    setStatus('fix-status', 'Patch error: ' + err.message, 'error');
-    toast('Patch failed: ' + err.message, 'error');
-  }
+    const allFixes=[...applied,...(fixes.appliedFixes||[])];
+    if (!allFixes.length){toast('No patches needed — epub looks clean!','success');return;}
+    const blob=await zip.generateAsync({type:'blob',mimeType:'application/epub+zip',compression:'DEFLATE',compressionOptions:{level:6}});
+    triggerDownload(blob, repairFile.name.replace(/\.epub$/i,'')+'_fixed.epub');
+    setStatus('fix-status','✓ '+allFixes.join(' · '),'success');
+    toast(`✨ ${allFixes.length} fix${allFixes.length!==1?'es':''} applied — downloading!`,'success');
+  } catch(err) { setStatus('fix-status','Patch error: '+err.message,'error'); toast('Patch failed: '+err.message,'error'); }
 }
 
 function renderResults(res) {
-  lastAnalysis = res;
+  lastAnalysis=res;
   document.getElementById('repair-results').classList.add('visible');
-  const sc = res.score||0, c = document.getElementById('score-circle');
-  c.textContent = sc; c.className = 'score-circle ' + (sc>=80?'good':sc>=50?'ok':'poor');
-  document.getElementById('score-title').textContent = res.scoreLabel || 'Health Score';
-  document.getElementById('score-label').textContent = res.scoreSummary || '';
-  const rl = (id, items, type) => {
-    document.getElementById(id).innerHTML = (items && items.length)
-      ? items.map(i=>`<li class="issue-item ${i.severity||type}"><span class="issue-badge">${i.severity||type}</span><div><strong>${esc(i.title)}</strong> — ${esc(i.detail)}</div></li>`).join('')
-      : `<li class="issue-item info"><span class="issue-badge">—</span><div>Nothing to report</div></li>`;
-  };
-  rl('issues-list', res.issues, 'info');
-  rl('good-list', (res.goodThings||[]).map(g=>({...g,severity:'fixed'})), 'fixed');
-  rl('recs-list', (res.recommendations||[]).map(r=>({...r,severity:'info'})), 'info');
-  repairMetaSug = res.suggestedMetadata || {};
+  const sc=res.score||0,c=document.getElementById('score-circle');
+  c.textContent=sc; c.className='score-circle '+(sc>=80?'good':sc>=50?'ok':'poor');
+  document.getElementById('score-title').textContent=res.scoreLabel||'Health Score';
+  document.getElementById('score-label').textContent=res.scoreSummary||'';
+  const rl=(id,items,type)=>{document.getElementById(id).innerHTML=(items&&items.length)?items.map(i=>`<li class="issue-item ${i.severity||type}"><span class="issue-badge">${i.severity||type}</span><div><strong>${esc(i.title)}</strong> — ${esc(i.detail)}</div></li>`).join(''):`<li class="issue-item info"><span class="issue-badge">—</span><div>Nothing to report</div></li>`;};
+  rl('issues-list',res.issues,'info');
+  rl('good-list',(res.goodThings||[]).map(g=>({...g,severity:'fixed'})),'fixed');
+  rl('recs-list',(res.recommendations||[]).map(r=>({...r,severity:'info'})),'info');
+  repairMetaSug=res.suggestedMetadata||{};
   renderMetaEditor(repairMetaSug);
-  document.getElementById('metadata-panel').style.display = 'block';
-
-  const fixes = res.fixes || {};
-  const summary = [...(fixes.appliedFixes || [])];
-  if (fixes.opfMetadataBlock) summary.unshift('OPF metadata rewritten');
-  if (fixes.ncxDocTitle) summary.unshift('NCX title corrected');
-  const fixPanel = document.getElementById('fix-panel');
-  if (summary.length && repairFile) {
-    document.getElementById('fix-list').innerHTML = summary.map(f => `
-      <li style="display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0.65rem;background:var(--cream);border-radius:6px;border:1px solid var(--warm-tan);font-size:0.84rem;color:var(--brown-dark)">
-        <span style="color:#5a8a5a;font-size:1rem">✓</span> ${esc(f)}
-      </li>`).join('');
-    fixPanel.style.display = 'block';
-  } else {
-    fixPanel.style.display = 'none';
-  }
+  document.getElementById('metadata-panel').style.display='block';
+  const fixes=res.fixes||{};
+  const summary=[...(fixes.appliedFixes||[])];
+  if(fixes.opfMetadataBlock)summary.unshift('OPF metadata rewritten');
+  if(fixes.ncxDocTitle)summary.unshift('NCX title corrected');
+  const fp=document.getElementById('fix-panel');
+  if(summary.length&&repairFile){document.getElementById('fix-list').innerHTML=summary.map(f=>`<li style="display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0.65rem;background:var(--cream);border-radius:6px;border:1px solid var(--warm-tan);font-size:0.84rem;color:var(--brown-dark)"><span style="color:#5a8a5a;font-size:1rem">✓</span> ${esc(f)}</li>`).join('');fp.style.display='block';}
+  else fp.style.display='none';
 }
 
 function renderMetaEditor(m) {
   const fields=[['title','Title'],['author','Author'],['language','Language'],['publisher','Publisher'],['publishDate','Publish Date'],['series','Series'],['seriesIndex','Series #'],['description','Description']];
   document.getElementById('meta-grid').innerHTML=fields.map(([k,l])=>`<span class="meta-key">${l}</span><input class="meta-editable" id="mf-${k}" value="${esc(m[k]||'')}" />`).join('');
 }
-function resetMeta() { if(repairMetaSug) renderMetaEditor(repairMetaSug); }
-function applyMeta() {
+function resetMeta(){if(repairMetaSug)renderMetaEditor(repairMetaSug);}
+function applyMeta(){
   const g=id=>document.getElementById(id)?.value.trim()||'';
-  const t=g('mf-title'), a=g('mf-author'), s=g('mf-series');
-  if (repairBookId) {
-    const b=books.find(x=>x.id===repairBookId);
-    if (b) {
-      if(t) b.title=t; if(a) b.author=a; if(s) b.tag=s;
-      saveMeta(); renderLibrary();
-      setStatus('meta-apply-status','✓ Applied to "'+b.title+'" in your library.','success');
-      toast('Metadata applied','success'); return;
-    }
-  }
-  if (t&&repairFile) {
-    const id=genId();
-    const nb={id,title:t,author:a||'Unknown Author',tag:s||'',added:Date.now(),file:repairFile,fileExt:'.epub',coverUrl:null};
-    books.unshift(nb); repairBookId=id;
-    ssSave(id,repairFile); saveMeta(); renderLibrary(); updateBanner();
-    setStatus('meta-apply-status','✓ Added to your library with clean metadata.','success');
-    toast('Added to library','success');
-  } else {
-    setStatus('meta-apply-status','Please fill in at least the title.','error');
-  }
+  const t=g('mf-title'),a=g('mf-author'),s=g('mf-series');
+  if(repairBookId){const b=books.find(x=>x.id===repairBookId);if(b){if(t)b.title=t;if(a)b.author=a;if(s)b.tag=s;saveMeta();renderLibrary();setStatus('meta-apply-status','✓ Applied to "'+b.title+'" in your library.','success');toast('Metadata applied','success');return;}}
+  if(t&&repairFile){const id=genId();const nb={id,title:t,author:a||'Unknown Author',tag:s||'',added:Date.now(),file:repairFile,fileExt:'.epub',coverUrl:null};books.unshift(nb);repairBookId=id;ssSave(id,repairFile);saveMeta();renderLibrary();updateBanner();setStatus('meta-apply-status','✓ Added to your library.','success');toast('Added to library','success');}
+  else setStatus('meta-apply-status','Please fill in at least the title.','error');
 }
 
-// ══ MODALS ══
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{ if(e.target===b) b.classList.remove('open'); }));
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
 
-// ══ HELPERS ══
-function setStatus(id, msg, type) {
+function setStatus(id,msg,type){
   const el=document.getElementById(id); if(!el) return;
-  el.textContent=msg; el.className='status-msg'+(type?' '+type:'');
+  el.innerHTML=msg; el.className='status-msg'+(type?' '+type:'');
   if(!type) el.style.display='none';
 }
-function toast(msg, type='success') {
+function toast(msg,type='success'){
   const c=document.getElementById('toast-container');
-  const t=document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg; c.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); },3000);
+  const t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all 0.3s';setTimeout(()=>t.remove(),300);},3000);
 }
 
-// ══════════════════════════════════════════
-//  DEEP STRUCTURAL EPUB REPAIR
-//  Runs after metadata patches, before zip blob generation.
-//  Returns array of human-readable change descriptions.
-// ══════════════════════════════════════════
-async function deepRepairEpub(zip, res, info) {
-  const changes = [];
-  const zipFiles = Object.keys(zip.files).filter(f => !zip.files[f].dir);
-  const zipSet   = new Set(zipFiles.map(f => f.toLowerCase()));
-
-  // ── locate OPF ─────────────────────────────────────────────────────────────
-  let opfPath = null;
-  const contFile = zip.file('META-INF/container.xml');
-  if (contFile) {
-    const cont = await contFile.async('text');
-    const m = cont.match(/full-path="([^"]+\.opf)"/i);
-    if (m) opfPath = m[1];
+// ══ DEEP STRUCTURAL EPUB REPAIR ══
+async function deepRepairEpub(zip,res,info){
+  const changes=[];
+  const zipFiles=Object.keys(zip.files).filter(f=>!zip.files[f].dir);
+  const zipSet=new Set(zipFiles.map(f=>f.toLowerCase()));
+  let opfPath=null;
+  const cf=zip.file('META-INF/container.xml');
+  if(cf){const c=await cf.async('text');const m=c.match(/full-path="([^"]+\.opf)"/i);if(m)opfPath=m[1];}
+  if(!opfPath)opfPath=zipFiles.find(f=>f.endsWith('.opf'));
+  if(!opfPath)return changes;
+  const opfDir=opfPath.includes('/')?opfPath.slice(0,opfPath.lastIndexOf('/')+1):'';
+  let opfText=await zip.file(opfPath).async('text');
+  const ncxPath=zipFiles.find(f=>f.endsWith('.ncx'));
+  let ncxText=ncxPath?await zip.file(ncxPath).async('text'):null;
+  const manifestHrefs=[...opfText.matchAll(/href="([^"]+)"/gi)].map(m=>m[1]);
+  const hasNumberedFolders=manifestHrefs.some(h=>/^\d+\//.test(h));
+  const titlepageCount=zipFiles.filter(f=>/titlepage/i.test(f)).length;
+  const hasEpubMerge=/epubmerge/i.test(opfText);
+  const isCompendium=hasNumberedFolders||titlepageCount>=2||hasEpubMerge;
+  changes.push(`Epub type: ${isCompendium?'compendium':'standalone'}`);
+  const brokenIds=new Set(); let newOpf=opfText;
+  for(const match of [...opfText.matchAll(/<item\s([^>]*)>/gi)]){
+    const attrs=match[1];const hm=attrs.match(/href="([^"]+)"/i);const im=attrs.match(/\bid="([^"]+)"/i);
+    if(!hm)continue;const href=hm[1];const resolved=(opfDir+href).replace(/\.\//g,'').toLowerCase();
+    if(!zipSet.has(resolved)&&!zipSet.has(href.toLowerCase())){if(im)brokenIds.add(im[1]);newOpf=newOpf.replace(match[0],`<!-- removed: ${href} -->`);changes.push(`Removed broken manifest: ${href}`);}
   }
-  if (!opfPath) opfPath = zipFiles.find(f => f.endsWith('.opf'));
-  if (!opfPath) return changes; // nothing we can do without OPF
-
-  const opfDir = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
-  let opfText = await zip.file(opfPath).async('text');
-
-  // ── locate NCX ─────────────────────────────────────────────────────────────
-  const ncxPath = zipFiles.find(f => f.endsWith('.ncx'));
-  let ncxText = ncxPath ? await zip.file(ncxPath).async('text') : null;
-
-  // ════════════════════════════════════════
-  //  1. DETECT EPUB TYPE
-  // ════════════════════════════════════════
-  const manifestHrefs = [...opfText.matchAll(/href="([^"]+)"/gi)].map(m => m[1]);
-  const hasNumberedFolders = manifestHrefs.some(h => /^\d+\//.test(h));
-  const titlepageCount = zipFiles.filter(f => /titlepage/i.test(f)).length;
-  const hasEpubMerge   = /epubmerge/i.test(opfText);
-  const isCompendium   = hasNumberedFolders || titlepageCount >= 2 || hasEpubMerge;
-  changes.push(`Epub type detected: ${isCompendium ? 'compendium' : 'standalone'}`);
-
-  // ════════════════════════════════════════
-  //  2. FIX BROKEN MANIFEST HREFS
-  // ════════════════════════════════════════
-  const brokenIds = new Set();
-  let newOpf = opfText;
-
-  const allItems = [...opfText.matchAll(/<item\s([^>]*)>/gi)];
-  for (const match of allItems) {
-    const attrs  = match[1];
-    const hrefM  = attrs.match(/href="([^"]+)"/i);
-    const idM    = attrs.match(/\bid="([^"]+)"/i);
-    if (!hrefM) continue;
-    const href   = hrefM[1];
-    // Resolve href relative to OPF directory
-    const resolved   = (opfDir + href).replace(/\.\//g, '').toLowerCase();
-    const inZip      = zipSet.has(resolved) || zipSet.has(href.toLowerCase());
-    if (!inZip) {
-      if (idM) brokenIds.add(idM[1]);
-      newOpf = newOpf.replace(match[0], `<!-- removed missing item: ${href} -->`);
-      changes.push(`Removed broken manifest item: ${href}`);
+  for(const id of brokenIds){const re=new RegExp(`<itemref[^>]*idref="${id}"[^>]*\\/?>','gi`);const b=newOpf;newOpf=newOpf.replace(new RegExp(`<itemref[^>]*idref="${id}"[^>]*\\/?>,'gi'`),`<!-- removed spine ref: ${id} -->`);if(newOpf!==b)changes.push(`Removed broken spine ref: ${id}`);}
+  if(newOpf!==opfText){zip.file(opfPath,newOpf);opfText=newOpf;}
+  if(ncxText){
+    const uidIdM=opfText.match(/unique-identifier="([^"]+)"/i);const uidId=uidIdM?uidIdM[1]:null;let uidValue='';
+    if(uidId){const uvm=opfText.match(new RegExp(`id="${uidId}"[^>]*>([^<]+)<`,'i'));if(uvm)uidValue=uvm[1].trim();}
+    if(uidValue){const old=ncxText.match(/<meta\s+name="dtb:uid"\s+content="([^"]*)"/i);if(!old||old[1]!==uidValue){ncxText=ncxText.replace(/<meta\s+name="dtb:uid"\s+content="[^"]*"/i,`<meta name="dtb:uid" content="${uidValue}"`);changes.push('NCX dtb:uid synced');}}
+    let po=1;const nb=ncxText;ncxText=ncxText.replace(/playOrder="(\d+)"/gi,()=>`playOrder="${po++}"`);if(ncxText!==nb)changes.push(`NCX playOrder renumbered (${po-1} navPoints)`);
+    const seen=new Set();const nb2=ncxText;ncxText=ncxText.replace(/(<navPoint\s[^>]*\bid=")([^"]+)(")/gi,(m,pre,id,post)=>{if(!seen.has(id)){seen.add(id);return m;}return pre+id+'_'+Math.random().toString(36).slice(2,6)+post;});if(ncxText!==nb2)changes.push('Deduplicated NCX navPoint ids');
+  }
+  if(isCompendium&&ncxText){
+    const cre=/<item\s[^>]*media-type="application\/xhtml\+xml"[^>]*href="([^"]+)"/gi;
+    const allContent=[...opfText.matchAll(cre)].map(m=>m[1]);
+    const fm=new Map();const nf=[];
+    for(const h of allContent){const m=h.match(/^(\d+)\//);if(m){const f=m[1];if(!fm.has(f))fm.set(f,[]);fm.get(f).push(h);}else nf.push(h);}
+    if(fm.size>=2){
+      const el=new Map();const nre=/<navPoint[^>]*>[\s\S]*?<navLabel>\s*<text>([^<]*)<\/text>\s*<\/navLabel>\s*<content\s+src="([^"]+)"/gi;
+      for(const m of [...ncxText.matchAll(nre)])el.set(decodeURIComponent(m[2].split('#')[0]),m[1].trim());
+      let po=1;const npx=[];
+      for(const folder of [...fm.keys()].sort((a,b)=>Number(a)-Number(b))){
+        const hrefs=fm.get(folder);const rh=hrefs.find(h=>/titlepage/i.test(h))||hrefs[0];const bl=el.get(rh)||`Book ${folder}`;
+        const tid=`book_${folder}`;const tpo=po++;
+        const ch=hrefs.map(h=>{const l=el.get(h)||h.split('/').pop().replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');const sid=`np_${folder}_${h.replace(/[^a-zA-Z0-9]/g,'_').slice(-24)}`;return `      <navPoint id="${sid}" playOrder="${po++}">\n        <navLabel><text>${escXml(l)}</text></navLabel>\n        <content src="${h}"/>\n      </navPoint>`;});
+        npx.push(`    <navPoint id="${tid}" playOrder="${tpo}">\n      <navLabel><text>${escXml(bl)}</text></navLabel>\n      <content src="${rh}"/>\n${ch.join('\n')}\n    </navPoint>`);
+      }
+      for(const h of nf){const l=el.get(h)||h.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');const sid=`np_root_${h.replace(/[^a-zA-Z0-9]/g,'_').slice(-24)}`;npx.push(`    <navPoint id="${sid}" playOrder="${po++}">\n      <navLabel><text>${escXml(l)}</text></navLabel>\n      <content src="${h}"/>\n    </navPoint>`);}
+      const nnm=`<navMap>\n${npx.join('\n')}\n  </navMap>`;const bnc=ncxText;ncxText=ncxText.replace(/<navMap>[\s\S]*<\/navMap>/i,nnm);if(ncxText!==bnc)changes.push(`Compendium navMap rebuilt (${fm.size} books, ${po-1} navPoints)`);
     }
   }
-
-  // Remove spine <itemref> entries for broken ids
-  for (const id of brokenIds) {
-    const irefRe = new RegExp(`<itemref[^>]*idref="${id}"[^>]*\\/?>`, 'gi');
-    const before = newOpf;
-    newOpf = newOpf.replace(irefRe, `<!-- removed spine ref: ${id} -->`);
-    if (newOpf !== before) changes.push(`Removed broken spine itemref: ${id}`);
-  }
-
-  if (newOpf !== opfText) {
-    zip.file(opfPath, newOpf);
-    opfText = newOpf;
-  }
-
-  // ════════════════════════════════════════
-  //  3. FIX NCX dtb:uid
-  // ════════════════════════════════════════
-  if (ncxText) {
-    const uidIdM  = opfText.match(/unique-identifier="([^"]+)"/i);
-    const uidId   = uidIdM ? uidIdM[1] : null;
-    let uidValue  = '';
-    if (uidId) {
-      const uidValM = opfText.match(new RegExp(`id="${uidId}"[^>]*>([^<]+)<`, 'i'));
-      if (uidValM) uidValue = uidValM[1].trim();
-    }
-    if (uidValue) {
-      const oldUid = ncxText.match(/<meta\s+name="dtb:uid"\s+content="([^"]*)"/i);
-      if (!oldUid || oldUid[1] !== uidValue) {
-        ncxText = ncxText.replace(
-          /<meta\s+name="dtb:uid"\s+content="[^"]*"/i,
-          `<meta name="dtb:uid" content="${uidValue}"`
-        );
-        changes.push(`NCX dtb:uid synced to OPF unique-identifier`);
-      }
-    }
-  }
-
-  // ════════════════════════════════════════
-  //  4. RENUMBER playOrder SEQUENTIALLY
-  // ════════════════════════════════════════
-  if (ncxText) {
-    let po = 1;
-    const before = ncxText;
-    ncxText = ncxText.replace(/playOrder="(\d+)"/gi, () => `playOrder="${po++}"`);
-    if (ncxText !== before) changes.push(`NCX playOrder renumbered sequentially (${po - 1} navPoints)`);
-  }
-
-  // ════════════════════════════════════════
-  //  5. DEDUPLICATE NCX navPoint ids
-  // ════════════════════════════════════════
-  if (ncxText) {
-    const seenIds = new Set();
-    const before  = ncxText;
-    ncxText = ncxText.replace(/(<navPoint\s[^>]*\bid=")([^"]+)(")/gi, (match, pre, id, post) => {
-      if (!seenIds.has(id)) { seenIds.add(id); return match; }
-      const newId = id + '_' + Math.random().toString(36).slice(2, 6);
-      return pre + newId + post;
-    });
-    if (ncxText !== before) changes.push('Deduplicated NCX navPoint ids');
-  }
-
-  // ════════════════════════════════════════
-  //  6. COMPENDIUM: REBUILD navMap
-  // ════════════════════════════════════════
-  if (isCompendium && ncxText) {
-    // Build a map of folder → manifest hrefs (content docs only: xhtml/html)
-    const contentRe  = /<item\s[^>]*media-type="application\/xhtml\+xml"[^>]*href="([^"]+)"/gi;
-    const allContent = [...opfText.matchAll(contentRe)].map(m => m[1]);
-
-    // Group by top-level folder prefix (e.g. "1/", "2/")
-    const folderMap  = new Map();
-    const noFolder   = [];
-    for (const href of allContent) {
-      const fm = href.match(/^(\d+)\//);
-      if (fm) {
-        const folder = fm[1];
-        if (!folderMap.has(folder)) folderMap.set(folder, []);
-        folderMap.get(folder).push(href);
-      } else {
-        noFolder.push(href);
-      }
-    }
-
-    // If we couldn't group meaningfully, skip navMap rebuild
-    if (folderMap.size >= 2) {
-      // Extract existing navPoint labels from current NCX (src → label)
-      const existingLabels = new Map();
-      const npRe = /<navPoint[^>]*>[\s\S]*?<navLabel>\s*<text>([^<]*)<\/text>\s*<\/navLabel>\s*<content\s+src="([^"]+)"/gi;
-      for (const m of [...ncxText.matchAll(npRe)]) {
-        existingLabels.set(decodeURIComponent(m[2].split('#')[0]), m[1].trim());
-      }
-
-      let playOrder = 1;
-      const navPointsXml = [];
-
-      const sortedFolders = [...folderMap.keys()].sort((a, b) => Number(a) - Number(b));
-      for (const folder of sortedFolders) {
-        const hrefs     = folderMap.get(folder);
-        const rootHref  = hrefs.find(h => /titlepage/i.test(h)) || hrefs[0];
-        let bookLabel   = existingLabels.get(rootHref) || `Book ${folder}`;
-
-        const topId     = `book_${folder}`;
-        const topPo     = playOrder++;
-
-        const children  = [];
-        for (const href of hrefs) {
-          const label  = existingLabels.get(href) || href.split('/').pop().replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-          const safeId = `np_${folder}_${href.replace(/[^a-zA-Z0-9]/g, '_').slice(-24)}`;
-          children.push(
-            `      <navPoint id="${safeId}" playOrder="${playOrder++}">\n` +
-            `        <navLabel><text>${escXml(label)}</text></navLabel>\n` +
-            `        <content src="${href}"/>\n` +
-            `      </navPoint>`
-          );
-        }
-
-        navPointsXml.push(
-          `    <navPoint id="${topId}" playOrder="${topPo}">\n` +
-          `      <navLabel><text>${escXml(bookLabel)}</text></navLabel>\n` +
-          `      <content src="${rootHref}"/>\n` +
-          children.join('\n') + '\n' +
-          `    </navPoint>`
-        );
-      }
-
-      // Append any non-folder content as flat entries at the end
-      for (const href of noFolder) {
-        const label  = existingLabels.get(href) || href.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-        const safeId = `np_root_${href.replace(/[^a-zA-Z0-9]/g, '_').slice(-24)}`;
-        navPointsXml.push(
-          `    <navPoint id="${safeId}" playOrder="${playOrder++}">\n` +
-          `      <navLabel><text>${escXml(label)}</text></navLabel>\n` +
-          `      <content src="${href}"/>\n` +
-          `    </navPoint>`
-        );
-      }
-
-      const newNavMap = `<navMap>\n${navPointsXml.join('\n')}\n  </navMap>`;
-      const before    = ncxText;
-      ncxText         = ncxText.replace(/<navMap>[\s\S]*<\/navMap>/i, newNavMap);
-      if (ncxText !== before) changes.push(`Compendium navMap rebuilt: ${sortedFolders.length} books, ${playOrder - 1} total navPoints`);
-    }
-  }
-
-  // ── Write final NCX ────────────────────────────────────────────────────────
-  if (ncxPath && ncxText) {
-    zip.file(ncxPath, ncxText);
-  }
-
+  if(ncxPath&&ncxText)zip.file(ncxPath,ncxText);
   return changes;
 }
 
-// XML-safe escaping for deepRepairEpub (separate from esc() to avoid HTML-context collisions)
-function escXml(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function escXml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 boot();
 </script>
